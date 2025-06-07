@@ -5,7 +5,7 @@
 import nltk
 import spacy
 from pathlib import Path
-
+import os
 
 nlp = spacy.load("en_core_web_sm")
 nlp.max_length = 2000000
@@ -40,11 +40,26 @@ def count_syl(word, d):
     pass
 
 
+
 def read_novels(path=Path.cwd() / "texts" / "novels"):
     """Reads texts from a directory of .txt files and returns a DataFrame with the text, title,
     author, and year"""
+    file_info = []
+    texts = []
+    for file_path in path.rglob("*"):
+        if file_path.suffix == ".txt":
+            print(Path(file_path).name)
+            with open(file_path,'r') as fp:
+                filename = Path(fp).name
+                #filename = os.path.basename(fp)
+                file_info.append(filename)
+                text = fp.readlines()
+                texts.append(text)
+    print(file_info)
+
     pass
 
+read_novels()
 
 def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     """Parses the text of a DataFrame using spaCy, stores the parsed docs as a column and writes 
