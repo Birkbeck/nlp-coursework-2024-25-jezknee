@@ -52,10 +52,15 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
             novel = []
             with file_path.open(mode = "r", encoding="utf-8") as fp:
                 novel_text = fp.read()
+                title_parts = str(Path(file_path).stem).split("-")
+                for t in title_parts:
+                    novel.append(t)
                 novel.append(novel_text)
-                novel.append(Path(file_path).stem)
                 texts.append(novel)
-    print(texts)
+                #print(novel)
+    novels_df = pd.DataFrame(texts)
+    novels_df.columns = ["Title", "Author", "Year", "Text"]
+    print(novels_df.head())
 
     pass
 
