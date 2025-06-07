@@ -5,7 +5,7 @@
 import nltk
 import spacy
 from pathlib import Path
-import os
+import pandas as pd
 
 nlp = spacy.load("en_core_web_sm")
 nlp.max_length = 2000000
@@ -49,13 +49,12 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
     texts = []
     for file_path in path.rglob("*"):
         if file_path.suffix == ".txt" and '1' in str(file_path.name):
-            print(Path(file_path).name)
-            #print(file_path.name)
-            file_info.append(Path(file_path).name)
-            #with open(file_path,'r') as fp:
-                #text = fp.readlines()
-                #texts.append(text)
-    #print(file_info)
+            file_info.append(Path(file_path).stem)
+            with file_path.open(mode = "r", encoding="utf-8") as fp:
+                novel_text = fp.read()
+                texts.append(novel_text)
+    print(file_info)
+    print(texts)
 
     pass
 
