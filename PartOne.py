@@ -44,18 +44,18 @@ def count_syl(word, d):
 def read_novels(path=Path.cwd() / "texts" / "novels"):
     """Reads texts from a directory of .txt files and returns a DataFrame with the text, title,
     author, and year"""
+    path = Path.cwd()
     file_info = []
     texts = []
     for file_path in path.rglob("*"):
-        if file_path.suffix == ".txt":
+        if file_path.suffix == ".txt" and '1' in str(file_path.name):
             print(Path(file_path).name)
-            with open(file_path,'r') as fp:
-                filename = Path(fp).name
-                #filename = os.path.basename(fp)
-                file_info.append(filename)
-                text = fp.readlines()
-                texts.append(text)
-    print(file_info)
+            #print(file_path.name)
+            file_info.append(Path(file_path).name)
+            #with open(file_path,'r') as fp:
+                #text = fp.readlines()
+                #texts.append(text)
+    #print(file_info)
 
     pass
 
