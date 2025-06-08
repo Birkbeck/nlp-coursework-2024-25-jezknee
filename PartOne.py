@@ -45,7 +45,7 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
     """Reads texts from a directory of .txt files and returns a DataFrame with the text, title,
     author, and year"""
     #1(a)(i)
-    path = Path.cwd()
+    #path = Path.cwd()
     file_info = []
     texts = []
     for file_path in path.rglob("*"):
@@ -61,31 +61,19 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
                 #print(novel)
     novels_df = pd.DataFrame(texts)
     novels_df.columns = ["Title", "Author", "Year", "Text"]
-    novels_df.columns = [col.strip() for col in list(novels_df.columns)]
     #1(a)(ii)
     # I spent hours trying to sort my dataframe with the text included. Eventually I gave up and removed the text, then joined it back later.
-    #print(novels_df)
-    #print(novels_df.columns)
     novels_df.reset_index(inplace=True)
     novels_df['Year'] = pd.to_numeric(novels_df['Year'])
     novelsdf_without_text = novels_df.filter(["Title", "Author", "Year"])
-    #print(novels_df.dtypes)
-    #print(repr(novels_df.columns.tolist()))
-    
     novelsdf_without_text = novelsdf_without_text.sort_values(by = ['Year'], ascending = True)
     pd.set_option("display.max_columns", None)
-    #print(novelsdf_without_text)
-    n_df = novelsdf_without_text.merge(novels_df, how = 'left', on = ['Title'])
-    print(n_df)
-    n_df = n_df.drop()
-    print(n_df)
-    #novels_df = novels_df.sort_values(by = novels_df['Year'], axis = 1, ascending = True, inplace=True, ignore_index=True)
-    #print(novels_df['Year'].sort_values())
-    #print(novels_df)
-    #return novels_df
+    n_df = novelsdf_without_text.merge(novels_df[["Title","Text"]], how = 'left', on = ['Title'])
+    #print(n_df)
+    return novels_df
     pass
 
-read_novels()
+#read_novels()
 
 def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     """Parses the text of a DataFrame using spaCy, stores the parsed docs as a column and writes 
@@ -137,10 +125,10 @@ if __name__ == "__main__":
     """
     uncomment the following lines to run the functions once you have completed them
     """
-    #path = Path.cwd() / "p1-texts" / "novels"
-    #print(path)
-    #df = read_novels(path) # this line will fail until you have completed the read_novels function above.
-    #print(df.head())
+    path = Path.cwd() / "p1-texts" / "novels"
+    print(path)
+    df = read_novels(path) # this line will fail until you have completed the read_novels function above.
+    print(df.head())
     #nltk.download("cmudict")
     #parse(df)
     #print(df.head())
