@@ -39,8 +39,6 @@ def count_syl(word, d):
     """
     pass
 
-
-
 def read_novels(path=Path.cwd() / "texts" / "novels"):
     """Reads texts from a directory of .txt files and returns a DataFrame with the text, title,
     author, and year"""
@@ -60,15 +58,15 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
                 texts.append(novel)
                 #print(novel)
     novels_df = pd.DataFrame(texts)
-    novels_df.columns = ["Title", "Author", "Year", "Text"]
+    novels_df.columns = ["title", "author", "year", "text"]
     #1(a)(ii)
     # I spent hours trying to sort my dataframe with the text included. Eventually I gave up and removed the text, then joined it back later.
     novels_df.reset_index(inplace=True)
-    novels_df['Year'] = pd.to_numeric(novels_df['Year'])
-    novelsdf_without_text = novels_df.filter(["Title", "Author", "Year"])
-    novelsdf_without_text = novelsdf_without_text.sort_values(by = ['Year'], ascending = True)
+    novels_df['Year'] = pd.to_numeric(novels_df['year'])
+    novelsdf_without_text = novels_df.filter(["title", "author", "year"])
+    novelsdf_without_text = novelsdf_without_text.sort_values(by = ['year'], ascending = True)
     pd.set_option("display.max_columns", None)
-    n_df = novelsdf_without_text.merge(novels_df[["Title","Text"]], how = 'left', on = ['Title'])
+    n_df = novelsdf_without_text.merge(novels_df[["title","text"]], how = 'left', on = ['title'])
     #print(n_df)
     return n_df
     pass
@@ -103,14 +101,18 @@ def nltk_ttr(text):
     types = set()
     for i in toks:
         types.add(i)
-    print(types)
+    #print(types)
+
+    type_token_ratio = round(len(types) / len(toks), 3)
+    #print(type_token_ratio)
+    return type_token_ratio
 
     pass
 
-path1 = Path.cwd()
-test_df = read_novels(path1)
-test_text = test_df["Text"][0]
-nltk_ttr(test_text)
+#path1 = Path.cwd()
+#test_df = read_novels(path1)
+#test_text = test_df["Text"][0]
+#nltk_ttr(test_text)
 
 def get_ttrs(df):
     """helper function to add ttr to a dataframe"""
@@ -158,7 +160,7 @@ if __name__ == "__main__":
     nltk.download("cmudict")
     #parse(df)
     #print(df.head())
-    #print(get_ttrs(df))
+    print(get_ttrs(df))
     #print(get_fks(df))
     #df = pd.read_pickle(Path.cwd() / "pickles" /"name.pickle")
     # print(adjective_counts(df))
