@@ -44,6 +44,7 @@ def count_syl(word, d):
 def read_novels(path=Path.cwd() / "texts" / "novels"):
     """Reads texts from a directory of .txt files and returns a DataFrame with the text, title,
     author, and year"""
+    #1(a)(i)
     path = Path.cwd()
     file_info = []
     texts = []
@@ -60,8 +61,28 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
                 #print(novel)
     novels_df = pd.DataFrame(texts)
     novels_df.columns = ["Title", "Author", "Year", "Text"]
-    print(novels_df.head())
-
+    novels_df.columns = [col.strip() for col in list(novels_df.columns)]
+    #1(a)(ii)
+    # I spent hours trying to sort my dataframe with the text included. Eventually I gave up and removed the text, then joined it back later.
+    #print(novels_df)
+    #print(novels_df.columns)
+    novels_df.reset_index(inplace=True)
+    novels_df['Year'] = pd.to_numeric(novels_df['Year'])
+    novelsdf_without_text = novels_df.filter(["Title", "Author", "Year"])
+    #print(novels_df.dtypes)
+    #print(repr(novels_df.columns.tolist()))
+    
+    novelsdf_without_text = novelsdf_without_text.sort_values(by = ['Year'], ascending = True)
+    pd.set_option("display.max_columns", None)
+    #print(novelsdf_without_text)
+    n_df = novelsdf_without_text.merge(novels_df, how = 'left', on = ['Title'])
+    print(n_df)
+    n_df = n_df.drop()
+    print(n_df)
+    #novels_df = novels_df.sort_values(by = novels_df['Year'], axis = 1, ascending = True, inplace=True, ignore_index=True)
+    #print(novels_df['Year'].sort_values())
+    #print(novels_df)
+    #return novels_df
     pass
 
 read_novels()
