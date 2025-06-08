@@ -70,10 +70,9 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
     pd.set_option("display.max_columns", None)
     n_df = novelsdf_without_text.merge(novels_df[["Title","Text"]], how = 'left', on = ['Title'])
     #print(n_df)
-    return novels_df
+    return n_df
     pass
 
-#read_novels()
 
 def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     """Parses the text of a DataFrame using spaCy, stores the parsed docs as a column and writes 
@@ -81,10 +80,37 @@ def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     pass
 
 
+
 def nltk_ttr(text):
     """Calculates the type-token ratio of a text. Text is tokenized using nltk.word_tokenize."""
+    # This function should return a dictionary mapping the title of each
+    # novel to its type-token ratio. Tokenize the text using the NLTK library only.
+    # Do not include punctuation as tokens, and ignore case when counting types.
+
+    # I used nltk's regex tokenizer, as detailed here: https://www.geeksforgeeks.org/python-nltk-tokenize-regexp/
+    from nltk.tokenize import RegexpTokenizer
+    tk = RegexpTokenizer(r'\w+')
+    #tok_text = nltk.word_tokenize(text)
+    tok_text_no_punc = tk.tokenize(text)
+    #print(tok_text)
+    #print(tok_text_no_punc)
+    toks = []
+    for i in tok_text_no_punc:
+        j = i.lower()
+        toks.append(j)
+    #print(toks) 
+
+    types = set()
+    for i in toks:
+        types.add(i)
+    print(types)
+
     pass
 
+path1 = Path.cwd()
+test_df = read_novels(path1)
+test_text = test_df["Text"][0]
+nltk_ttr(test_text)
 
 def get_ttrs(df):
     """helper function to add ttr to a dataframe"""
@@ -129,7 +155,7 @@ if __name__ == "__main__":
     print(path)
     df = read_novels(path) # this line will fail until you have completed the read_novels function above.
     print(df.head())
-    #nltk.download("cmudict")
+    nltk.download("cmudict")
     #parse(df)
     #print(df.head())
     #print(get_ttrs(df))
