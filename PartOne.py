@@ -23,6 +23,23 @@ def fk_level(text, d):
     Returns:
         float: The Flesch-Kincaid Grade Level of the text. (higher grade is more difficult)
     """
+
+        # This function should return a dictionary mapping the title of
+    # each novel to the Flesch-Kincaid reading grade level score of the text. Use the
+    # NLTK library for tokenization and the CMU pronouncing dictionary for estimating syllable counts.
+
+    # the instructions didn't say whether to include punctuation or capitalisation
+    # I decided to include it, as conceivably use of punctuation & capitalisation could affect the readability of a text
+    
+    # couldn't find formula in lecture notes, so got it from Microsoft: https://support.microsoft.com/en-gb/office/get-your-document-s-readability-and-level-statistics-85b4969e-e80a-4777-8dd3-f7fc3c8b3fd2#__toc342546558
+    #(0.39 x ASL) + (11.8 x ASW) – 15.59
+    #where:
+    #ASL = average sentence length (the number of words divided by the number of sentences)
+    #ASW = average number of syllables per word (the number of syllables divided by the number of words)
+    tok_text = nltk.word_tokenize(text)
+    sent_text = nltk.sent_tokenize(text)
+    asl = len(tok_text) / len(sent_text)
+    print(asl)
     pass
 
 
@@ -60,9 +77,10 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
     novels_df = pd.DataFrame(texts)
     novels_df.columns = ["title", "author", "year", "text"]
     #1(a)(ii)
-    # I spent hours trying to sort my dataframe with the text included. Eventually I gave up and removed the text, then joined it back later.
+    # I spent hours trying to sort my dataframe with the text included. 
+    # Eventually I gave up and removed the text, then joined it back later.
     novels_df.reset_index(inplace=True)
-    novels_df['Year'] = pd.to_numeric(novels_df['year'])
+    novels_df['year'] = pd.to_numeric(novels_df['year'])
     novelsdf_without_text = novels_df.filter(["title", "author", "year"])
     novelsdf_without_text = novelsdf_without_text.sort_values(by = ['year'], ascending = True)
     pd.set_option("display.max_columns", None)
@@ -109,10 +127,12 @@ def nltk_ttr(text):
 
     pass
 
-#path1 = Path.cwd()
-#test_df = read_novels(path1)
-#test_text = test_df["Text"][0]
+path1 = Path.cwd()
+test_df = read_novels(path1)
+test_text = test_df["text"][0]
 #nltk_ttr(test_text)
+temp_dict = dict()
+fk_level(test_text, temp_dict)
 
 def get_ttrs(df):
     """helper function to add ttr to a dataframe"""
@@ -156,11 +176,11 @@ if __name__ == "__main__":
     path = Path.cwd() / "p1-texts" / "novels"
     print(path)
     df = read_novels(path) # this line will fail until you have completed the read_novels function above.
-    print(df.head())
-    nltk.download("cmudict")
+    #print(df.head())
+    #nltk.download("cmudict")
     #parse(df)
     #print(df.head())
-    print(get_ttrs(df))
+    #print(get_ttrs(df))
     #print(get_fks(df))
     #df = pd.read_pickle(Path.cwd() / "pickles" /"name.pickle")
     # print(adjective_counts(df))
