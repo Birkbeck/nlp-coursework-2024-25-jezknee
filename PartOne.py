@@ -38,15 +38,26 @@ def fk_level(text, d):
     #ASW = average number of syllables per word (the number of syllables divided by the number of words)
     tok_text = nltk.word_tokenize(text)
     sent_text = nltk.sent_tokenize(text)
-    asl = len(tok_text) / len(sent_text)
+    total_words = len(tok_text)
+    asl = total_words / len(sent_text)
     print(asl)
+    total_syllables = 0
+    for token in tok_text:
+        word_syll_count = count_syl(token, d)
+        #print(word_syll_count)
+        total_syllables += word_syll_count
+    print(total_syllables)
+
+    asw = total_syllables / total_words
+    print(asw)
+
     pass
 
 
 def count_syl(word, d):
     """Counts the number of syllables in a word given a dictionary of syllables per word.
     if the word is not in the dictionary, syllables are estimated by counting vowel clusters
-
+    
     Args:
         word (str): The word to count syllables for.
         d (dict): A dictionary of syllables per word.
@@ -54,6 +65,10 @@ def count_syl(word, d):
     Returns:
         int: The number of syllables in the word.
     """
+    syllable = d[word]
+    syllables_in_word = len(syllable)
+    return syllables_in_word
+
     pass
 
 def read_novels(path=Path.cwd() / "texts" / "novels"):
@@ -131,8 +146,8 @@ path1 = Path.cwd()
 test_df = read_novels(path1)
 test_text = test_df["text"][0]
 #nltk_ttr(test_text)
-temp_dict = dict()
-fk_level(test_text, temp_dict)
+cmudict = nltk.corpus.cmudict.dict()
+fk_level(test_text, cmudict)
 
 def get_ttrs(df):
     """helper function to add ttr to a dataframe"""
