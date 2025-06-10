@@ -56,6 +56,11 @@ def fk_level(text, d):
     asw = total_syllables / total_words
     print(asw)
 
+    # then the calculation
+    fk_result = (0.39*asl) + (11.8*asw) - 15.59
+    print(fk_result)
+    return fk_result
+
     pass
 
 
@@ -71,10 +76,16 @@ def count_syl(word, d):
         int: The number of syllables in the word.
     """
     w = word.lower()
-    syllable = d[w]
-    syllables_in_word = len(syllable)
-    return syllables_in_word
+    try:
+        syllable = d[w]
+        syllables_in_word = len(syllable)
+        return syllables_in_word
+    except:
+        print(w + " not in the dictionary.")
+        return 0
 
+    # should also take the word out of the total words count?
+    # need to split these into morphemes instead of full words
     pass
 
 def read_novels(path=Path.cwd() / "texts" / "novels"):
@@ -160,7 +171,7 @@ tk = RegexpTokenizer(r'\w+')
     
 #test_t_nopunc = tk.tokenize(test_text)
 
-fk_level(test_text, cmudict)
+
 
 def get_ttrs(df):
     """helper function to add ttr to a dataframe"""
@@ -178,6 +189,8 @@ def get_fks(df):
         results[row["title"]] = round(fk_level(row["text"], cmudict), 4)
     return results
 
+fk_level(test_text, cmudict)
+print(get_fks(test_df))
 
 def subjects_by_verb_pmi(doc, target_verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
