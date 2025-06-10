@@ -41,8 +41,13 @@ def fk_level(text, d):
     total_words = len(tok_text)
     asl = total_words / len(sent_text)
     print(asl)
+    from nltk.tokenize import RegexpTokenizer
+    tk = RegexpTokenizer(r'\w+')
+    #tok_text = nltk.word_tokenize(text)
+    tok_text_no_punc = tk.tokenize(text)
+
     total_syllables = 0
-    for token in tok_text:
+    for token in tok_text_no_punc:
         word_syll_count = count_syl(token, d)
         #print(word_syll_count)
         total_syllables += word_syll_count
@@ -65,7 +70,8 @@ def count_syl(word, d):
     Returns:
         int: The number of syllables in the word.
     """
-    syllable = d[word]
+    w = word.lower()
+    syllable = d[w]
     syllables_in_word = len(syllable)
     return syllables_in_word
 
@@ -144,9 +150,16 @@ def nltk_ttr(text):
 
 path1 = Path.cwd()
 test_df = read_novels(path1)
-test_text = test_df["text"][0]
+#test_text = test_df["text"][0]
+test_text = "Here are some words. I am writing a sentence or two or three. However, the longer words make this harder to read."
 #nltk_ttr(test_text)
 cmudict = nltk.corpus.cmudict.dict()
+from nltk.tokenize import RegexpTokenizer
+tk = RegexpTokenizer(r'\w+')
+#tok_text = nltk.word_tokenize(text)
+    
+#test_t_nopunc = tk.tokenize(test_text)
+
 fk_level(test_text, cmudict)
 
 def get_ttrs(df):

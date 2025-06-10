@@ -37,6 +37,7 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
 import pandas as pd
 import nltk
 cmudict = nltk.corpus.cmudict.dict()
-print(cmudict)
+#print(cmudict)
+print(cmudict["Chapter"])
 #pd.DataFrame(cmudict)
 #print(cmudict.head())
