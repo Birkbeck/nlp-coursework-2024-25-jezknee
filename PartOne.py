@@ -40,7 +40,7 @@ def fk_level(text, d):
     sent_text = nltk.sent_tokenize(text)
     total_words = len(tok_text)
     asl = total_words / len(sent_text)
-    print(asl)
+    #print(asl)
     from nltk.tokenize import RegexpTokenizer
     tk = RegexpTokenizer(r'\w+')
     #tok_text = nltk.word_tokenize(text)
@@ -51,14 +51,14 @@ def fk_level(text, d):
         word_syll_count = count_syl(token, d)
         #print(word_syll_count)
         total_syllables += word_syll_count
-    print(total_syllables)
+    #print(total_syllables)
 
     asw = total_syllables / total_words
-    print(asw)
+    #print(asw)
 
     # then the calculation
     fk_result = (0.39*asl) + (11.8*asw) - 15.59
-    print(fk_result)
+    #print(fk_result)
     return fk_result
 
     pass
@@ -81,7 +81,7 @@ def count_syl(word, d):
         syllables_in_word = len(syllable)
         return syllables_in_word
     except:
-        print(w + " not in the dictionary.")
+        #print(w + " not in the dictionary.")
         return 0
 
     # should also take the word out of the total words count?
@@ -129,7 +129,7 @@ def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     for i in df["text"]:
         j = parse_text_with_spacy(i)
         parsed_doc_list.append(j)
-    df["parsed_doc"] = parsed_doc_list
+    df = df.assign(parsed_doc_list)
     return df
     
     pass
@@ -137,6 +137,7 @@ def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
 def parse_text_with_spacy(text):
     from spacy.tokenizer import Tokenizer
     nlp = spacy.load("en_core_web_sm")
+    nlp.max_length = 1200000
     tok_text = nlp(text)
     return tok_text
     #print(type(text))
