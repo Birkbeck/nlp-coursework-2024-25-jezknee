@@ -125,8 +125,27 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
 def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     """Parses the text of a DataFrame using spaCy, stores the parsed docs as a column and writes 
     the resulting  DataFrame to a pickle file"""
+    parsed_doc_list = []
+    for i in df["text"]:
+        j = parse_text_with_spacy(i)
+        parsed_doc_list.append(j)
+    df["parsed_doc"] = parsed_doc_list
+    return df
+    
     pass
 
+def parse_text_with_spacy(text):
+    from spacy.tokenizer import Tokenizer
+    nlp = spacy.load("en_core_web_sm")
+    tok_text = nlp(text)
+    return tok_text
+    #print(type(text))
+    #print(type(tok_text))
+    #print(text)
+    #print(tok_text)
+    #for token in tok_text:
+        #token_text = token.lemma_
+        #print(token_text)
 
 
 def nltk_ttr(text):
@@ -161,12 +180,13 @@ def nltk_ttr(text):
 
 path1 = Path.cwd()
 test_df = read_novels(path1)
-#test_text = test_df["text"][0]
-test_text = "Here are some words. I am writing a sentence or two or three. However, the longer words make this harder to read."
+test_text = test_df["text"][0]
+parse_text_with_spacy(test_text)
+#test_text = "Here are some words. I am writing a sentence or two or three. However, the longer words make this harder to read."
 #nltk_ttr(test_text)
-cmudict = nltk.corpus.cmudict.dict()
-from nltk.tokenize import RegexpTokenizer
-tk = RegexpTokenizer(r'\w+')
+#cmudict = nltk.corpus.cmudict.dict()
+#from nltk.tokenize import RegexpTokenizer
+#tk = RegexpTokenizer(r'\w+')
 #tok_text = nltk.word_tokenize(text)
     
 #test_t_nopunc = tk.tokenize(test_text)
@@ -189,8 +209,8 @@ def get_fks(df):
         results[row["title"]] = round(fk_level(row["text"], cmudict), 4)
     return results
 
-fk_level(test_text, cmudict)
-print(get_fks(test_df))
+#fk_level(test_text, cmudict)
+#print(get_fks(test_df))
 
 def subjects_by_verb_pmi(doc, target_verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
@@ -217,12 +237,12 @@ if __name__ == "__main__":
     path = Path.cwd() / "p1-texts" / "novels"
     print(path)
     df = read_novels(path) # this line will fail until you have completed the read_novels function above.
-    #print(df.head())
+    print(df.head())
     #nltk.download("cmudict")
-    #parse(df)
-    #print(df.head())
-    #print(get_ttrs(df))
-    #print(get_fks(df))
+    parse(df)
+    print(df.head())
+    print(get_ttrs(df))
+    print(get_fks(df))
     #df = pd.read_pickle(Path.cwd() / "pickles" /"name.pickle")
     # print(adjective_counts(df))
     """ 
