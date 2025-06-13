@@ -126,10 +126,15 @@ def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     """Parses the text of a DataFrame using spaCy, stores the parsed docs as a column and writes 
     the resulting  DataFrame to a pickle file"""
     parsed_doc_list = []
+    #df.columns = ["title", "author", "year", "text","parsed_text"]
     for i in df["text"]:
         j = parse_text_with_spacy(i)
+        #df["parsed_text"] = j
         parsed_doc_list.append(j)
-    df = df.assign(parsed_doc_list)
+    #parsed_texts = pd.DataFrame(parsed_doc_list)
+    #print(parsed_texts.head())
+    df["parsed_text"] = parsed_doc_list
+    print(df)
     return df
     
     pass
