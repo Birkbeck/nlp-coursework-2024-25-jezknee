@@ -227,6 +227,20 @@ def adjective_counts(doc):
 
     pass
 
+def find_nouns(doc):
+    # copied this from something I did in a class exercise
+    # I've assumed that 'syntactic objects' means actual objects, i.e. words denoted by a noun
+    # I suppose it could also have meant any token
+    all_nouns = dict()
+    for token in doc:
+        token_text = token.lemma_
+        if token.pos_ == "NOUN" or token.pos == "PROPN":
+            if token_text not in all_nouns:
+                all_nouns[token_text] = 1
+            elif token_text in all_nouns:
+                all_nouns[token_text] += 1
+    return all_nouns
+
 
 
 if __name__ == "__main__":
