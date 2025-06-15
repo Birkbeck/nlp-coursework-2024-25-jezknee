@@ -197,16 +197,20 @@ def subjects_by_verb(doc, verb):
     token_counter = 0
     verb_list = dict()
     for token in doc:
-        if token_counter == temp_counter + 1:
+        if token_counter == temp_counter + 1 and (token.pos_ == "NOUN" or token.pos_ == "PROPN"):
             verb_subject = token
             if verb_subject not in verb_list:
                 verb_list[verb_subject] = 1
             elif verb_subject in verb_list:
                 verb_list[verb_subject] += 1
+            temp_counter = -2
+        elif token_counter == temp_counter + 1:
+            token_counter += 1
+            temp_counter += 1
         elif token.lemma_ == verb:
             temp_counter = token_counter
         token_counter += 1
-    return verb_dict
+    return verb_list
 
 
 def subjects_by_verb_pmi(doc, target_verb):
@@ -217,7 +221,10 @@ def subjects_by_verb_pmi(doc, target_verb):
 
 def subjects_by_verb_count(doc, verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
-    #verb
+    verb_dict = subjects_by_verb(doc, verb)
+    results_top_10 = sorted(verb_dict.items(), key=lambda item: item[1], reverse = True)[:9]
+    return results_top_10
+
     pass
 
 def find_adjectives(doc):
@@ -292,7 +299,7 @@ if __name__ == "__main__":
 
     for i, row in df.iterrows():
         print(row["title"])
-        print(subjects_by_verb_count(row["parsed"], "hear"))
+        print(subjects_by_verb_count(row["parsed_text"], "hear"))
         print("\n")
     """
 
