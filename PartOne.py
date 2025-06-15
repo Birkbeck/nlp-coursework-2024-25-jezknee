@@ -213,12 +213,14 @@ def find_adjectives(doc):
                 all_adjectives[token_text] = 1
             elif token_text in all_adjectives:
                 all_adjectives[token_text] += 1
+    #print(all_adjectives)
+    return all_adjectives
 
 def adjective_counts(doc):
     """Extracts the most common adjectives in a parsed document. Returns a list of tuples."""
     results = {}
     for i, row in df.iterrows():
-        row_results = find_adjectives(row["text"])
+        row_results = find_adjectives(row["parsed_text"])
         results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
         results[row["title"]] = results_top_10
     return results
@@ -231,10 +233,11 @@ if __name__ == "__main__":
     """
     uncomment the following lines to run the functions once you have completed them
     """
-    path = Path.cwd() / "p1-texts" / "novels"
-    print(path)
+    #path = Path.cwd() / "p1-texts" / "novels"
+    #print(path)
     #df = read_novels(path) # this line will fail until you have completed the read_novels function above.
     #print(df.head())
+    #print(df.dtypes)
     #nltk.download("cmudict")
     #parse(df)
     #print(df.head())
@@ -242,6 +245,7 @@ if __name__ == "__main__":
     #print(get_fks(df))
     df = pd.read_pickle(Path.cwd() / "pickles" /"parsed.pickle")
     print(df.head())
+    print(df.dtypes)
     print(adjective_counts(df))
     """ 
     for i, row in df.iterrows():
