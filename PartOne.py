@@ -218,16 +218,35 @@ def subjects_by_verb(doc, verb):
 
 def object_verb_dependent(doc, verb):
     # at this point I went back to the spacy documentation and read it more carefully!
+    # interpreting 'syntactic subject of to hear' as agent that does the hearing
+    #
     object_verb_list = dict()
+    #for token in doc:
+        #if token.lemma_ == verb:
+            #root = [token for token in doc if token.head == token][0]
+            #subject = list(root.lefts)[0]
+            #for descendant in subject.subtree:
+                #assert subject is descendant or subject.is_ancestor(descendant)
+                #print(descendant.text, descendant.dep_, descendant.n_lefts, descendant.n_rights, [ancestor.text for ancestor in descendant.ancestors])
+
+
     for token in doc:
-        if token.lemma_ == verb:
-            verb_subtree = token.subtree
-            for descendant in verb_subtree:
-                print(descendant)
-            if descendant not in object_verb_list:
-                object_verb_list[descendant] = 1
-            elif descendant in object_verb_list:
-                object_verb_list[descendant] += 1
+        verb_nlp = nlp(verb)
+        if token.lemma_ == verb_nlp.lemma_:
+            verb_subtree = token.ancestors
+            #print(verb_subtree)
+            a = []
+            for ancestor in verb_subtree:
+                #a = []
+                #print(ancestor)
+                #if ancestor.pos_ == "NOUN" or ancestor.pos_ == "PNOUN":
+                a.append(ancestor)
+                #print(ancestor)
+                if ancestor.lemma_ not in object_verb_list:
+                    object_verb_list[ancestor.lemma_] = 1
+                elif ancestor.lemma_ in object_verb_list:
+                    object_verb_list[ancestor.lemma_] += 1
+            print(a)
     return object_verb_list
 
 
