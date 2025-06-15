@@ -134,9 +134,12 @@ def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     #parsed_texts = pd.DataFrame(parsed_doc_list)
     #print(parsed_texts.head())
     df["parsed_text"] = parsed_doc_list
-    print(df)
-    return df
+    #print(df)
     
+    store_path=Path.cwd() / "pickles" / "parsed.pickle"
+    df.to_pickle(store_path)
+    return df
+
     pass
 
 def parse_text_with_spacy(text):
@@ -184,10 +187,10 @@ def nltk_ttr(text):
 
     pass
 
-path1 = Path.cwd()
-test_df = read_novels(path1)
-test_text = test_df["text"][0]
-parse_text_with_spacy(test_text)
+#path1 = Path.cwd()
+#test_df = read_novels(path1)
+#test_text = test_df["text"][0]z
+#parse_text_with_spacy(test_text)
 #test_text = "Here are some words. I am writing a sentence or two or three. However, the longer words make this harder to read."
 #nltk_ttr(test_text)
 #cmudict = nltk.corpus.cmudict.dict()
@@ -242,15 +245,16 @@ if __name__ == "__main__":
     """
     path = Path.cwd() / "p1-texts" / "novels"
     print(path)
-    df = read_novels(path) # this line will fail until you have completed the read_novels function above.
-    print(df.head())
+    #df = read_novels(path) # this line will fail until you have completed the read_novels function above.
+    #print(df.head())
     #nltk.download("cmudict")
-    parse(df)
+    #parse(df)
+    #print(df.head())
+    #print(get_ttrs(df))
+    #print(get_fks(df))
+    df = pd.read_pickle(Path.cwd() / "pickles" /"parsed.pickle")
     print(df.head())
-    print(get_ttrs(df))
-    print(get_fks(df))
-    #df = pd.read_pickle(Path.cwd() / "pickles" /"name.pickle")
-    # print(adjective_counts(df))
+    # print(adjective_counts(df))s
     """ 
     for i, row in df.iterrows():
         print(row["title"])
