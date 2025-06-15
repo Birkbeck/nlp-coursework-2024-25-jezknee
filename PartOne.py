@@ -203,13 +203,12 @@ def subjects_by_verb_count(doc, verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
     pass
 
-def find_adjectives(doc, adjectives):
+def find_adjectives(doc):
     # copied this from something I did in a class exercise
     all_adjectives = dict()
     for token in doc:
         token_text = token.lemma_
         if token.pos_ == "ADJ":
-            adjectives.add(token_text)
             if token_text not in all_adjectives:
                 all_adjectives[token_text] = 1
             elif token_text in all_adjectives:
@@ -217,7 +216,12 @@ def find_adjectives(doc, adjectives):
 
 def adjective_counts(doc):
     """Extracts the most common adjectives in a parsed document. Returns a list of tuples."""
-    
+    results = {}
+    for i, row in df.iterrows():
+        row_results = find_adjectives(row["text"])
+        results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
+        results[row["title"]] = results_top_10
+    return results
 
     pass
 
@@ -238,7 +242,7 @@ if __name__ == "__main__":
     #print(get_fks(df))
     df = pd.read_pickle(Path.cwd() / "pickles" /"parsed.pickle")
     print(df.head())
-    # print(adjective_counts(df))s
+    print(adjective_counts(df))
     """ 
     for i, row in df.iterrows():
         print(row["title"])
