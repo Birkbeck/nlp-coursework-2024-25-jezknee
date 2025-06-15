@@ -40,25 +40,19 @@ def fk_level(text, d):
     sent_text = nltk.sent_tokenize(text)
     total_words = len(tok_text)
     asl = total_words / len(sent_text)
-    #print(asl)
     from nltk.tokenize import RegexpTokenizer
     tk = RegexpTokenizer(r'\w+')
-    #tok_text = nltk.word_tokenize(text)
     tok_text_no_punc = tk.tokenize(text)
 
     total_syllables = 0
     for token in tok_text_no_punc:
         word_syll_count = count_syl(token, d)
-        #print(word_syll_count)
         total_syllables += word_syll_count
-    #print(total_syllables)
 
     asw = total_syllables / total_words
-    #print(asw)
 
     # then the calculation
     fk_result = (0.39*asl) + (11.8*asw) - 15.59
-    #print(fk_result)
     return fk_result
 
     pass
@@ -92,7 +86,6 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
     """Reads texts from a directory of .txt files and returns a DataFrame with the text, title,
     author, and year"""
     #1(a)(i)
-    #path = Path.cwd()
     file_info = []
     texts = []
     for file_path in path.rglob("*"):
@@ -105,7 +98,6 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
                     novel.append(t)
                 novel.append(novel_text)
                 texts.append(novel)
-                #print(novel)
     novels_df = pd.DataFrame(texts)
     novels_df.columns = ["title", "author", "year", "text"]
     #1(a)(ii)
@@ -126,15 +118,10 @@ def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     """Parses the text of a DataFrame using spaCy, stores the parsed docs as a column and writes 
     the resulting  DataFrame to a pickle file"""
     parsed_doc_list = []
-    #df.columns = ["title", "author", "year", "text","parsed_text"]
     for i in df["text"]:
         j = parse_text_with_spacy(i)
-        #df["parsed_text"] = j
         parsed_doc_list.append(j)
-    #parsed_texts = pd.DataFrame(parsed_doc_list)
-    #print(parsed_texts.head())
     df["parsed_text"] = parsed_doc_list
-    #print(df)
     
     store_path=Path.cwd() / "pickles" / "parsed.pickle"
     df.to_pickle(store_path)
@@ -148,13 +135,6 @@ def parse_text_with_spacy(text):
     nlp.max_length = 1200000
     tok_text = nlp(text)
     return tok_text
-    #print(type(text))
-    #print(type(tok_text))
-    #print(text)
-    #print(tok_text)
-    #for token in tok_text:
-        #token_text = token.lemma_
-        #print(token_text)
 
 
 def nltk_ttr(text):
@@ -166,23 +146,17 @@ def nltk_ttr(text):
     # I used nltk's regex tokenizer, as detailed here: https://www.geeksforgeeks.org/python-nltk-tokenize-regexp/
     from nltk.tokenize import RegexpTokenizer
     tk = RegexpTokenizer(r'\w+')
-    #tok_text = nltk.word_tokenize(text)
     tok_text_no_punc = tk.tokenize(text)
-    #print(tok_text)
-    #print(tok_text_no_punc)
     toks = []
     for i in tok_text_no_punc:
         j = i.lower()
         toks.append(j)
-    #print(toks) 
 
     types = set()
     for i in toks:
         types.add(i)
-    #print(types)
 
     type_token_ratio = round(len(types) / len(toks), 3)
-    #print(type_token_ratio)
     return type_token_ratio
 
     pass
@@ -218,8 +192,6 @@ def get_fks(df):
         results[row["title"]] = round(fk_level(row["text"], cmudict), 4)
     return results
 
-#fk_level(test_text, cmudict)
-#print(get_fks(test_df))
 
 def subjects_by_verb_pmi(doc, target_verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
@@ -231,10 +203,22 @@ def subjects_by_verb_count(doc, verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
     pass
 
-
+def find_adjectives(doc, adjectives):
+    # copied this from something I did in a class exercise
+    all_adjectives = dict()
+    for token in doc:
+        token_text = token.lemma_
+        if token.pos_ == "ADJ":
+            adjectives.add(token_text)
+            if token_text not in all_adjectives:
+                all_adjectives[token_text] = 1
+            elif token_text in all_adjectives:
+                all_adjectives[token_text] += 1
 
 def adjective_counts(doc):
     """Extracts the most common adjectives in a parsed document. Returns a list of tuples."""
+    
+
     pass
 
 
