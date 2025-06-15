@@ -134,7 +134,11 @@ def parse_text_with_spacy(text):
     nlp = spacy.load("en_core_web_sm")
     nlp.max_length = 1200000
     tok_text = nlp(text)
+
+    # Construction via add_pipe with default model
+    #parser = nlp.add_pipe("parser")
     return tok_text
+    #return parser
 
 
 def nltk_ttr(text):
@@ -198,7 +202,7 @@ def subjects_by_verb(doc, verb):
     verb_list = dict()
     for token in doc:
         if token_counter == temp_counter + 1 and (token.pos_ == "NOUN" or token.pos_ == "PROPN"):
-            verb_subject = token
+            verb_subject = token.lemma_
             if verb_subject not in verb_list:
                 verb_list[verb_subject] = 1
             elif verb_subject in verb_list:
@@ -212,6 +216,20 @@ def subjects_by_verb(doc, verb):
         token_counter += 1
     return verb_list
 
+def object_verb_dependent(doc, verb):
+    # at this point I went back to the spacy documentation and read it more carefully!
+    object_verb_list = dict()
+    for token in doc:
+        if token.lemma_ == verb:
+            verb_subtree = token.subtree
+            for descendant in verb_subtree:
+                print(descendant)
+            if descendant not in object_verb_list:
+                object_verb_list[descendant] = 1
+            elif descendant in object_verb_list:
+                object_verb_list[descendant] += 1
+    return object_verb_list
+
 
 def subjects_by_verb_pmi(doc, target_verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
@@ -221,7 +239,7 @@ def subjects_by_verb_pmi(doc, target_verb):
 
 def subjects_by_verb_count(doc, verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
-    verb_dict = subjects_by_verb(doc, verb)
+    verb_dict = object_verb_dependent(doc, verb)
     results_top_10 = sorted(verb_dict.items(), key=lambda item: item[1], reverse = True)[:9]
     return results_top_10
 
@@ -292,8 +310,8 @@ if __name__ == "__main__":
     #print(get_ttrs(df))
     #print(get_fks(df))
     df = pd.read_pickle(Path.cwd() / "pickles" /"parsed.pickle")
-    #print(df.head())
-    #print(df.dtypes)
+    print(df.head())
+    print(df.dtypes)
     print(adjective_counts(df))
     print(noun_counts(df))
 
