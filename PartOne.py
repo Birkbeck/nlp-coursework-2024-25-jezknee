@@ -192,6 +192,22 @@ def get_fks(df):
         results[row["title"]] = round(fk_level(row["text"], cmudict), 4)
     return results
 
+def subjects_by_verb(doc, verb):
+    temp_counter = -2
+    token_counter = 0
+    verb_list = dict()
+    for token in doc:
+        if token_counter == temp_counter + 1:
+            verb_subject = token
+            if verb_subject not in verb_list:
+                verb_list[verb_subject] = 1
+            elif verb_subject in verb_list:
+                verb_list[verb_subject] += 1
+        elif token.lemma_ == verb:
+            temp_counter = token_counter
+        token_counter += 1
+    return verb_dict
+
 
 def subjects_by_verb_pmi(doc, target_verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
@@ -201,6 +217,7 @@ def subjects_by_verb_pmi(doc, target_verb):
 
 def subjects_by_verb_count(doc, verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
+    #verb
     pass
 
 def find_adjectives(doc):
@@ -218,6 +235,8 @@ def find_adjectives(doc):
 
 def adjective_counts(doc):
     """Extracts the most common adjectives in a parsed document. Returns a list of tuples."""
+    # it didn't specifically ask about this in the instructions, but the sample function was here
+    # I thought I'd just create it anyway, really isn't any extra work, given that I had to do the same thing for syntactic objects
     results = {}
     for i, row in df.iterrows():
         row_results = find_adjectives(row["parsed_text"])
@@ -241,7 +260,15 @@ def find_nouns(doc):
                 all_nouns[token_text] += 1
     return all_nouns
 
-
+def noun_counts(doc):
+    """Extracts the most common nouns in a parsed document. Returns a list of tuples."""
+    # defining syntactic objects as nouns and proper nouns
+    results = {}
+    for i, row in df.iterrows():
+        row_results = find_nouns(row["parsed_text"])
+        results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
+        results[row["title"]] = results_top_10
+    return results
 
 if __name__ == "__main__":
     """
@@ -258,14 +285,17 @@ if __name__ == "__main__":
     #print(get_ttrs(df))
     #print(get_fks(df))
     df = pd.read_pickle(Path.cwd() / "pickles" /"parsed.pickle")
-    print(df.head())
-    print(df.dtypes)
+    #print(df.head())
+    #print(df.dtypes)
     print(adjective_counts(df))
-    """ 
+    print(noun_counts(df))
+
     for i, row in df.iterrows():
         print(row["title"])
         print(subjects_by_verb_count(row["parsed"], "hear"))
         print("\n")
+    """
+
 
     for i, row in df.iterrows():
         print(row["title"])
