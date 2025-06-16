@@ -220,7 +220,7 @@ def object_verb_dependent(doc, verb):
     # at this point I went back to the spacy documentation and read it more carefully!
     # interpreting 'syntactic subject of to hear' as agent that does the hearing
     #
-    object_verb_list = dict()
+    #object_verb_list = dict()
     #for token in doc:
         #if token.lemma_ == verb:
             #root = [token for token in doc if token.head == token][0]
@@ -228,27 +228,54 @@ def object_verb_dependent(doc, verb):
             #for descendant in subject.subtree:
                 #assert subject is descendant or subject.is_ancestor(descendant)
                 #print(descendant.text, descendant.dep_, descendant.n_lefts, descendant.n_rights, [ancestor.text for ancestor in descendant.ancestors])
+    """
+    for chunk in doc.noun_chunks:
+        print(chunk.text, chunk.root.text, chunk.root.dep_,
+                chunk.root.head.text)
+    """
+    # first proper draft after reading the documents
+    # I'll come back to this and work out how to get the people that the pronouns refer to
+    subjects = dict()    
+    for token in doc:
+        if token.pos_ == "VERB":
+            if token.lemma_ == verb:
+                v = []
+                #print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_, token.shape_, token.is_alpha, token.is_stop)
+                for t in token.lefts:
+                    #print("lefts: ", t.lemma_, t.pos_, t.tag, t.dep_, t.shape_, t.is_alpha, t.is_stop)
+                    if t.pos_ == "NOUN" or t.pos_ == "PNOUN" or t.pos_ == "PRON":
+                        v.append(t.lemma_)
+                        if t.lemma_ not in subjects:
+                            subjects[t.lemma_] = 1
+                        elif t.lemma_ in subjects:
+                            subjects[t.lemma_] += 1
+                #for t in token.rights:
+                    #print("Rights: ", t.lemma_, t.pos_, t.tag, t.dep_, t.shape_, t.is_alpha, t.is_stop)
+                #print(v)
+    #print(subjects)
+    return subjects
 
-
+"""
     for token in doc:
         verb_nlp = nlp(verb)
-        if token.lemma_ == verb_nlp.lemma_:
-            verb_subtree = token.ancestors
-            #print(verb_subtree)
-            a = []
-            for ancestor in verb_subtree:
-                #a = []
-                #print(ancestor)
-                #if ancestor.pos_ == "NOUN" or ancestor.pos_ == "PNOUN":
-                a.append(ancestor)
-                #print(ancestor)
-                if ancestor.lemma_ not in object_verb_list:
-                    object_verb_list[ancestor.lemma_] = 1
-                elif ancestor.lemma_ in object_verb_list:
-                    object_verb_list[ancestor.lemma_] += 1
-            print(a)
+        for i in verb_nlp:
+            if token.lemma_ == i.lemma_:
+                verb_subtree = token.ancestors
+                #print(verb_subtree)
+                a = []
+                for ancestor in verb_subtree:
+                    #a = []
+                    #print(ancestor)
+                    #if ancestor.pos_ == "NOUN" or ancestor.pos_ == "PNOUN":
+                    a.append(ancestor)
+                    #print(ancestor)
+                    if ancestor.lemma_ not in object_verb_list:
+                        object_verb_list[ancestor.lemma_] = 1
+                    elif ancestor.lemma_ in object_verb_list:
+                        object_verb_list[ancestor.lemma_] += 1
+                print(a)
     return object_verb_list
-
+"""
 
 def subjects_by_verb_pmi(doc, target_verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
@@ -263,6 +290,7 @@ def subjects_by_verb_count(doc, verb):
     return results_top_10
 
     pass
+
 
 def find_adjectives(doc):
     # copied this from something I did in a class exercise
