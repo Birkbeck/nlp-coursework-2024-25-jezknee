@@ -244,7 +244,7 @@ def object_verb_dependent(doc, verb):
                 for t in token.lefts:
                     #print("lefts: ", t.lemma_, t.pos_, t.tag, t.dep_, t.shape_, t.is_alpha, t.is_stop)
                     if t.pos_ == "NOUN" or t.pos_ == "PNOUN" or t.pos_ == "PRON":
-                        v.append(t.lemma_)
+                        v.append(t)
                         if t.lemma_ not in subjects:
                             subjects[t.lemma_] = 1
                         elif t.lemma_ in subjects:
@@ -278,7 +278,30 @@ def object_verb_dependent(doc, verb):
 """
 
 def subjects_by_verb_pmi(doc, target_verb):
+    # Im going to interpret this as the PMI between "to hear" and the subject
+    verb_dict = object_verb_dependent(doc, target_verb)
+    verb_count = 0
+    # number of times verb occurs in document
+    for token in doc:
+        if token.lemma_ == target_verb:
+            verb_count += 1
+    print("Verb Count:" + str(verb_count))
+    # number of times noun occurs in document
+    for key in verb_dict:
+        verb_dict[key] = []
+        token_count = 0
+        for token in doc:
+            if token.lemma_ == key:
+                token_count += 1
+    print("Noun Count:" + str(token_count))
+    # number of times noun occurs near verb
+
+    
+
+    # probability of them occurring together over probability of one times probability of the other
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
+    
+
     pass
 
 
@@ -379,18 +402,15 @@ if __name__ == "__main__":
     print(df.dtypes)
     print(adjective_counts(df))
     print(noun_counts(df))
-    print(object_counts(df))
+    #print(object_counts(df))
 
     for i, row in df.iterrows():
         print(row["title"])
         print(subjects_by_verb_count(row["parsed_text"], "hear"))
         print("\n")
-    """
-
 
     for i, row in df.iterrows():
         print(row["title"])
-        print(subjects_by_verb_pmi(row["parsed"], "hear"))
+        print(subjects_by_verb_pmi(row["parsed_text"], "hear"))
         print("\n")
-    """
 
