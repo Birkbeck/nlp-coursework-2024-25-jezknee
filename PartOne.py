@@ -291,6 +291,24 @@ def subjects_by_verb_count(doc, verb):
 
     pass
 
+def find_objects(doc):
+    # I saw the idea of noun chunks somewhere in the documentation, thought it might be better than just getting nouns
+    all_objects = dict()
+    for i in doc.noun_chunks:
+        if i not in all_objects:
+            all_objects[i] = 1
+        elif i in all_objects:
+            all_objects[i] += 1
+    #print(all_adjectives)
+    return all_objects
+
+def object_counts(doc):
+    results = {}
+    for i, row in df.iterrows():
+        row_results = find_objects(row["parsed_text"])
+        results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
+        results[row["title"]] = results_top_10
+    return results
 
 def find_adjectives(doc):
     # copied this from something I did in a class exercise
@@ -361,6 +379,7 @@ if __name__ == "__main__":
     print(df.dtypes)
     print(adjective_counts(df))
     print(noun_counts(df))
+    print(object_counts(df))
 
     for i, row in df.iterrows():
         print(row["title"])
