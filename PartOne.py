@@ -281,19 +281,29 @@ def subjects_by_verb_pmi(doc, target_verb):
     # Im going to interpret this as the PMI between "to hear" and the subject
     verb_dict = object_verb_dependent(doc, target_verb)
     verb_count = 0
+    pmi_dict = dict()
+    # total words in document
+    all_tokens = 0
     # number of times verb occurs in document
     for token in doc:
+        all_tokens += 1
         if token.lemma_ == target_verb:
             verb_count += 1
     print("Verb Count:" + str(verb_count))
     # number of times noun occurs in document
     for key in verb_dict:
-        verb_dict[key] = []
         token_count = 0
         for token in doc:
             if token.lemma_ == key:
                 token_count += 1
+        try:
+            covalue = verb_dict[key]
+        except:
+            covalue = 0
+        pmi_dict[key] = (covalue, verb_count, token_count)
+    print("All Tokens:" + str(all_tokens))
     print("Noun Count:" + str(token_count))
+    print("All Values", pmi_dict)
     # number of times noun occurs near verb
 
     
