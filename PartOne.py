@@ -302,8 +302,21 @@ def subjects_by_verb_pmi(doc, target_verb):
             covalue = 0
         pmi_dict[key] = (covalue, verb_count, token_count)
     print("All Tokens:" + str(all_tokens))
-    print("Noun Count:" + str(token_count))
+    #print("Noun Count:" + str(token_count))
     print("All Values", pmi_dict)
+
+    for j in pmi_dict:
+        cooccurrence = pmi_dict[j][0]
+        verb_occurrence = pmi_dict[j][1]
+        noun_occurrence = pmi_dict[j][2]
+
+        prob_verb_and_noun = (cooccurrence / all_tokens)
+        print("Pw1w2: " + str(prob_verb_and_noun))
+        prob_verb_times_prob_noun = (verb_occurrence / all_tokens) * (noun_occurrence / all_tokens)
+        print("Pw1_times_Pw2: " + str(prob_verb_times_prob_noun))
+        prob_to_log = prob_verb_and_noun / prob_verb_times_prob_noun
+        print(prob_to_log)
+
     # number of times noun occurs near verb
 
     
