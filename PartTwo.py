@@ -1,4 +1,7 @@
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+
 pd.set_option("display.max_columns", None)
 
 text = pd.read_csv(r"C:\Users\jezkn\OneDrive\Documents\Birkbeck\Work\Natural Language Processing\Coursework\nlp-coursework-2024-25-jezknee\p2-texts\hansard40000.csv")
@@ -22,3 +25,9 @@ final_hansard_df = common_hansard_df[common_hansard_df["speech"].str.len() >= 10
 #print(final_hansard_df["speech"].str.len())
 
 print(final_hansard_df.shape)
+
+vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english")
+
+x_train, x_test = train_test_split(final_hansard_df["speech"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
+print(x_train)
+print(x_test)
