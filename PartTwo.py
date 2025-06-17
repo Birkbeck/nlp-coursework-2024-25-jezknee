@@ -15,3 +15,7 @@ print(most_common_parties)
 common_hansard_df = hansard_df[hansard_df["party"].isin(most_common_parties)]
 print(common_hansard_df.head())
 print(common_hansard_df["party"].value_counts())
+final_hansard_df = common_hansard_df[common_hansard_df["speech"].str.len() >= 1000]
+#print(final_hansard_df.head())
+print(final_hansard_df["party"].value_counts())
+print(final_hansard_df["speech"].str.len())
