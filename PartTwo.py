@@ -26,8 +26,14 @@ final_hansard_df = common_hansard_df[common_hansard_df["speech"].str.len() >= 10
 
 print(final_hansard_df.shape)
 
-vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5, min_df=5, stop_words="english")
+# originally copied the vectorizer code from a class project, then modified it
+#t0 = time()
+vectorizer = TfidfVectorizer(max_features=5000, stop_words="english")
 
 x_train, x_test = train_test_split(final_hansard_df["speech"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
 print(x_train)
 print(x_test)
+
+X_train = vectorizer.fit_transform(x_train)
+X_test = vectorizer.transform(x_test)
+#duration_train = time() - t0
