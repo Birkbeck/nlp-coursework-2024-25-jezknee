@@ -28,9 +28,6 @@ def fk_level(text, d):
     # each novel to the Flesch-Kincaid reading grade level score of the text. Use the
     # NLTK library for tokenization and the CMU pronouncing dictionary for estimating syllable counts.
 
-    # the instructions didn't say whether to include punctuation or capitalisation
-    # I decided to include it, as conceivably use of punctuation & capitalisation could affect the readability of a text
-    
     # couldn't find formula in lecture notes, so got it from Microsoft: https://support.microsoft.com/en-gb/office/get-your-document-s-readability-and-level-statistics-85b4969e-e80a-4777-8dd3-f7fc3c8b3fd2#__toc342546558
     #(0.39 x ASL) + (11.8 x ASW) – 15.59
     #where:
