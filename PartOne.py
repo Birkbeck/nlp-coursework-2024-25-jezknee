@@ -278,7 +278,9 @@ def object_verb_dependent(doc, verb):
 """
 
 def subjects_by_verb_pmi(doc, target_verb):
+    """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
     # Im going to interpret this as the PMI between "to hear" and the subject
+
     verb_dict = object_verb_dependent(doc, target_verb)
     verb_count = 0
     pmi_dict = dict()
@@ -289,7 +291,7 @@ def subjects_by_verb_pmi(doc, target_verb):
         all_tokens += 1
         if token.lemma_ == target_verb:
             verb_count += 1
-    print("Verb Count:" + str(verb_count))
+    #print("Verb Count:" + str(verb_count))
     # number of times noun occurs in document
     for key in verb_dict:
         token_count = 0
@@ -301,32 +303,32 @@ def subjects_by_verb_pmi(doc, target_verb):
         except:
             covalue = 0
         pmi_dict[key] = (covalue, verb_count, token_count)
-    print("All Tokens:" + str(all_tokens))
+    #print("All Tokens:" + str(all_tokens))
     #print("Noun Count:" + str(token_count))
-    print("All Values", pmi_dict)
+    #print("All Values", pmi_dict)
 
+    dict_to_return = dict()
     for j in pmi_dict:
         cooccurrence = pmi_dict[j][0]
         verb_occurrence = pmi_dict[j][1]
         noun_occurrence = pmi_dict[j][2]
 
         prob_verb_and_noun = (cooccurrence / all_tokens)
-        print("Pw1w2: " + str(prob_verb_and_noun))
+        #print("Pw1w2: " + str(prob_verb_and_noun))
         prob_verb_times_prob_noun = (verb_occurrence / all_tokens) * (noun_occurrence / all_tokens)
-        print("Pw1_times_Pw2: " + str(prob_verb_times_prob_noun))
+        #print("Pw1_times_Pw2: " + str(prob_verb_times_prob_noun))
         prob_to_log = prob_verb_and_noun / prob_verb_times_prob_noun
-        print(prob_to_log)
+        #print("Prob to log: " + str(prob_to_log))
+        import math 
+        final_probability = round(math.log(prob_to_log),4)
+        #print("Final probability: " + str(final_probability))
+        dict_to_return[j] = final_probability
+    #print(dict_to_return)
 
-    # number of times noun occurs near verb
-
-    
-
-    # probability of them occurring together over probability of one times probability of the other
-    """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
-    
+    results_top_10 = sorted(dict_to_return.items(), key=lambda item: item[1], reverse = True)[:9]
+    return results_top_10
 
     pass
-
 
 
 def subjects_by_verb_count(doc, verb):
@@ -336,6 +338,7 @@ def subjects_by_verb_count(doc, verb):
     return results_top_10
 
     pass
+
 
 def find_objects(doc):
     # I saw the idea of noun chunks somewhere in the documentation, thought it might be better than just getting nouns
