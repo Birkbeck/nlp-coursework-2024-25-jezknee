@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
 pd.set_option("display.max_columns", None)
@@ -26,14 +27,24 @@ final_hansard_df = common_hansard_df[common_hansard_df["speech"].str.len() >= 10
 
 print(final_hansard_df.shape)
 
-# originally copied the vectorizer code from a class project, then modified it
+# originally copied the vectorizer code from a class project (lab 4), then modified it
 #t0 = time()
 vectorizer = TfidfVectorizer(max_features=5000, stop_words="english")
 
-x_train, x_test = train_test_split(final_hansard_df["speech"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
+x_train, x_test, y_train, y_test = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
 print(x_train)
 print(x_test)
+print(y_train)
+print(y_test)
 
 X_train = vectorizer.fit_transform(x_train)
 X_test = vectorizer.transform(x_test)
+#Y_train = vectorizer.fit_transform(y_train)
+#Y_test = vectorizer.transform(y_test)
+print(X_train)
+print(y_train)
 #duration_train = time() - t0
+
+first_model = RandomForestClassifier(n_estimators=300)
+first_model.fit(X=X_train, y=y_train)
+#first_model_predictions = first_model.predict(X_test, y_test)
