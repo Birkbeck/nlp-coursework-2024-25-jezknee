@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import svm
 from sklearn.model_selection import train_test_split
 
 pd.set_option("display.max_columns", None)
@@ -45,6 +46,10 @@ print(X_train)
 print(y_train)
 #duration_train = time() - t0
 
-first_model = RandomForestClassifier(n_estimators=300)
-first_model.fit(X=X_train, y=y_train)
-#first_model_predictions = first_model.predict(X_test, y_test)
+rf_model = RandomForestClassifier(n_estimators=300)
+rf_model.fit(X=X_train, y=y_train)
+svm_model = svm.LinearSVC()
+svm_model.fit(X=X_train, y=y_train)
+rf_predictions = rf_model.predict(X_test)
+svm_predictions = svm_model.predict(X_test)
+
