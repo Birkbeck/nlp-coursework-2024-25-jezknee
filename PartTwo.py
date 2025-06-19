@@ -60,10 +60,10 @@ print_all_results(first_rf_predictions, first_svm_predictions, y_test)
 
 # now adjusting the Vectoriser parameters - 2(d)
 # looked ngram parameter up in the sckkitlearn official documentation
-vectorizer_second = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 2, 3))
+vectorizer_second = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3))
 x_train2, x_test2, y_train2, y_test2 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
-X_train2 = vectorizer.fit_transform(x_train2)
-X_test2 = vectorizer.transform(x_test2)
+X_train2 = vectorizer_second.fit_transform(x_train2)
+X_test2 = vectorizer_second.transform(x_test2)
 
 second_rf_predictions = rf_model_train_and_predict(X_train2, y_train2, X_test2)
 second_svm_predictions = svm_model_train_and_predict(X_train2, y_train2, X_test2)
