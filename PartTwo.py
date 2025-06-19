@@ -68,3 +68,18 @@ X_test2 = vectorizer_second.transform(x_test2)
 second_rf_predictions = rf_model_train_and_predict(X_train2, y_train2, X_test2)
 second_svm_predictions = svm_model_train_and_predict(X_train2, y_train2, X_test2)
 print_all_results(second_rf_predictions, second_svm_predictions, y_test2)
+
+# first I'm going to try my tokeniser from Part 1, just to see what happens
+import spacy
+from spacy.tokenizer import Tokenizer
+nlp = spacy.load("en_core_web_sm")
+#nlp.max_length = 12000
+
+vectorizer_third = TfidfVectorizer(max_features=3000, tokenizer=nlp)
+x_train3, x_test3, y_train3, y_test3 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
+X_train3 = vectorizer_third.fit_transform(x_train3)
+X_test3 = vectorizer_third.transform(x_test3)
+
+third_rf_predictions = rf_model_train_and_predict(X_train3, y_train3, X_test3)
+third_svm_predictions = svm_model_train_and_predict(X_train3, y_train3, X_test3)
+print_all_results(third_rf_predictions, third_svm_predictions, y_test3)
