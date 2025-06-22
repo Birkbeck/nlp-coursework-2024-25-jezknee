@@ -134,14 +134,17 @@ def custom_tokenizer(doc, features, train_or_test):
     pipe = Pipeline([('count', CountVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), vocabulary=vocabulary, lowercase =False)),
                     ('tfid', TfidfTransformer())]).fit(corpus)
     if train_or_test:
-        pipe['count'].fit_transform(doc)#.toarray()
+        pipe['count'].fit_transform(doc, ).toarray()
         #print(pipe['count'].get_feature_names_out())
     elif not train_or_test:
         pipe['count'].transform(doc)
 
+    #df = pd.DataFrame(pipe['tfid'].toarray(), columns = pipe.get_feature_names_out())
+    #print(df)
     pipe['tfid'].idf_
-    pipe.transform(corpus).shape
-    return pipe
+    X_output = pipe.transform(corpus)
+    return X_output
+    
 
 
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
