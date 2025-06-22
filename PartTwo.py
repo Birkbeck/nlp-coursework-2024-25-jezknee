@@ -58,6 +58,7 @@ def print_all_results(rf_predictions, svm_predictions, ytest):
 
 first_rf_predictions = rf_model_train_and_predict(X_train, y_train, X_test)
 first_svm_predictions = svm_model_train_and_predict(X_train, y_train, X_test)
+print("Prediction 1: Original Tokenizer, question 2c")
 print_all_results(first_rf_predictions, first_svm_predictions, y_test)
 
 # now adjusting the Vectoriser parameters - 2(d)
@@ -69,6 +70,7 @@ X_test2 = vectorizer_second.transform(x_test2)
 
 second_rf_predictions = rf_model_train_and_predict(X_train2, y_train2, X_test2)
 second_svm_predictions = svm_model_train_and_predict(X_train2, y_train2, X_test2)
+print("Prediction 2: slightly improved model, question 2d")
 print_all_results(second_rf_predictions, second_svm_predictions, y_test2)
 
 # first I'm going to try my tokeniser from Part 1, just to see what happens
@@ -122,24 +124,34 @@ print_all_results(fourth_rf_predictions, fourth_svm_predictions, y_test4)
 """
 
 # copied this sample code from the scikitlearn docs, then customised it: https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html#sklearn.feature_extraction.text.TfidfTransformer
-def custom_tokenizer(doc, features):
+def custom_tokenizer(doc, features, train_or_test):
     from sklearn.feature_extraction.text import TfidfTransformer
     from sklearn.feature_extraction.text import CountVectorizer
     from sklearn.pipeline import Pipeline
     corpus = doc
-    vocabulary = features
+    # originally an error - seems that vocabulary needs to consist of unique values - got this idea from https://github.com/scikit-learn/scikit-learn/issues/2634
+    vocabulary = list(set(features))
     pipe = Pipeline([('count', CountVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), vocabulary=vocabulary, lowercase =False)),
                     ('tfid', TfidfTransformer())]).fit(corpus)
-    pipe['count'].transform(corpus).toarray()
+    if train_or_test:
+        pipe['count'].fit_transform(doc)#.toarray()
+        #print(pipe['count'].get_feature_names_out())
+    elif not train_or_test:
+        pipe['count'].transform(doc)
+
     pipe['tfid'].idf_
     pipe.transform(corpus).shape
     return pipe
 
 
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
-X_train5 = custom_tokenizer(x_train5, x_train5)
-X_test5 = custom_tokenizer(x_test5, x_test5)
+X_train5 = custom_tokenizer(x_train5, x_train5, True)
+#Y_train5 = custom_tokenizer(y_train5, y_train5, False)
+X_test5 = custom_tokenizer(x_test5, x_test5, False)
+print(X_train5)
+print(X_test5)
 
-#rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
-#svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
-#print_all_results(rf_predictions5, svm_predictions5, y_test5)
+rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
+svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
+print("Prediction 5, custom tokenizer, question 2e")
+print_all_results(rf_predictions5, svm_predictions5, y_test5)
