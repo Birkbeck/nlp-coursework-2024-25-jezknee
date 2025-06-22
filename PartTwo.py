@@ -164,22 +164,39 @@ x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech
 
 v = CountVectorizer(ngram_range=(1,3), encoding="utf-8", decode_error='replace')
 X = v.fit_transform(x_train5)
+"""
 try:
-    z = v.vocabulary_
-    for i in z:
+    #z = v.vocabulary_
+    for i in X:
          print(i)
 except:
         pass
         
 w = v.get_feature_names_out()
+"""
+
+a = TfidfTransformer()
+
+b = a.fit_transform(X)
+
+
+"""
+try:
+    for i in b:
+         print(i)
+except:
+        pass
+"""
+
 #df = pd.DataFrame(X.toarray(), columns=w)
 #print(df.head())
 #z = X.toarray()
 
-#X_train5 = vectorizer_custom.fit_transform(x_train5)
-#X_test5 = vectorizer_custom.transform(x_test5)
+X_train5 = b
+X_test5a = v.transform(x_test5)
+X_test5 = a.transform(X_test5a) #transform?
 
-#rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
-#svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
-#print("Prediction 5, custom tokenizer, question 2e")
-#print_all_results(rf_predictions5, svm_predictions5, y_test5)
+rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
+svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
+print("Prediction 5, custom tokenizer, question 2e")
+print_all_results(rf_predictions5, svm_predictions5, y_test5)
