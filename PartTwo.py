@@ -10,7 +10,7 @@ from sklearn.metrics import classification_report
 
 pd.set_option("display.max_columns", None)
 
-text = pd.read_csv(r"C:\Users\jezkn\OneDrive\Documents\Birkbeck\Work\Natural Language Processing\Coursework\nlp-coursework-2024-25-jezknee\p2-texts\hansard40000.csv")
+text = pd.read_csv(r"C:\Users\jezkn\OneDrive\Documents\Birkbeck\Work\Natural Language Processing\Coursework\nlp-coursework-2024-25-jezknee\p2-texts\hansard40000.csv", encoding='utf-8', encoding_errors='replace')
 hansard_df = pd.DataFrame(text)
 hansard_df = hansard_df.replace("Labour (Co-op)", "Labour")
 filtered_hansard_df = hansard_df[hansard_df["party"] != "Speaker"]
@@ -42,9 +42,9 @@ def svm_model_train_and_predict(xtrain, ytrain, xtest):
     return svm_predictions
 
 def print_all_results(rf_predictions, svm_predictions, ytest):
-    f1_score_rf = f1_score(rf_predictions,ytest, average=None)
-    f1_score_svm = f1_score(svm_predictions, ytest, average=None)
-    report_rf = classification_report(rf_predictions,ytest,zero_division=0)
+    f1_score_rf = f1_score(ytest, rf_predictions, average=None)
+    f1_score_svm = f1_score(ytest, svm_predictions, average=None)
+    report_rf = classification_report(ytest, rf_predictions,zero_division=0)
     report_svm = classification_report(svm_predictions,ytest)
 
     print("RF f1")
@@ -55,6 +55,8 @@ def print_all_results(rf_predictions, svm_predictions, ytest):
     print(report_rf)
     print("SVM classification report")
     print(report_svm)
+
+# GET THIS BIT BACK LATER
 
 first_rf_predictions = rf_model_train_and_predict(X_train, y_train, X_test)
 first_svm_predictions = svm_model_train_and_predict(X_train, y_train, X_test)
@@ -73,11 +75,13 @@ second_svm_predictions = svm_model_train_and_predict(X_train2, y_train2, X_test2
 print("Prediction 2: slightly improved model, question 2d")
 print_all_results(second_rf_predictions, second_svm_predictions, y_test2)
 
-# first I'm going to try my tokeniser from Part 1, just to see what happens
 """
+# first I'm going to try my tokeniser from Part 1, just to see what happens
+
 import spacy
 from spacy.tokenizer import Tokenizer
 nlp = spacy.load("en_core_web_sm")
+nlp.max_length = 20000
 #nlp.max_length = 12000
 
 
@@ -88,9 +92,10 @@ X_test3 = vectorizer_third.transform(x_test3)
 
 third_rf_predictions = rf_model_train_and_predict(X_train3, y_train3, X_test3)
 third_svm_predictions = svm_model_train_and_predict(X_train3, y_train3, X_test3)
+print("Prediction 3: PartOne nlp tokenizer")
 print_all_results(third_rf_predictions, third_svm_predictions, y_test3)
-"""
 
+"""
 # now attempting to improve performance by doing feature selection
 # I've read through the official scikitlearn documentation again and got these ideas from there
 """
@@ -122,7 +127,7 @@ fourth_rf_predictions = rf_model_train_and_predict(X_train4b, y_train4, X_test4)
 fourth_svm_predictions = svm_model_train_and_predict(X_train4b, y_train4, X_test4)
 print_all_results(fourth_rf_predictions, fourth_svm_predictions, y_test4)
 """
-
+"""
 # copied this sample code from the scikitlearn docs, then customised it: https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html#sklearn.feature_extraction.text.TfidfTransformer
 def custom_tokenizer(doc, features, train_or_test):
     from sklearn.feature_extraction.text import TfidfTransformer
@@ -134,27 +139,47 @@ def custom_tokenizer(doc, features, train_or_test):
     pipe = Pipeline([('count', CountVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), vocabulary=vocabulary, lowercase =False)),
                     ('tfid', TfidfTransformer())]).fit(corpus)
     if train_or_test:
-        pipe['count'].fit_transform(doc, ).toarray()
-        #print(pipe['count'].get_feature_names_out())
+        pipe['count'].fit_transform(doc)
+        #feature_names = pipe['count'].get_feature_names_out()
+        #print(feature_names)
+        #print(pipe['count2'].toarray())
     elif not train_or_test:
         pipe['count'].transform(doc)
 
     #df = pd.DataFrame(pipe['tfid'].toarray(), columns = pipe.get_feature_names_out())
     #print(df)
     pipe['tfid'].idf_
-    X_output = pipe.transform(corpus)
-    return X_output
-    
+    #X_output = pipe.transform(corpus)
+    #return X_output
+"""
+
+#def custom_tokenizer():
+
+    #return tokenizer
 
 
+
+#vectorizer_custom = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), tokenizer=custom_tokenizer)
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
-X_train5 = custom_tokenizer(x_train5, x_train5, True)
-#Y_train5 = custom_tokenizer(y_train5, y_train5, False)
-X_test5 = custom_tokenizer(x_test5, x_test5, False)
-print(X_train5)
-print(X_test5)
 
-rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
-svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
-print("Prediction 5, custom tokenizer, question 2e")
-print_all_results(rf_predictions5, svm_predictions5, y_test5)
+v = CountVectorizer(ngram_range=(1,3), encoding="utf-8", decode_error='replace')
+X = v.fit_transform(x_train5)
+try:
+    z = v.vocabulary_
+    for i in z:
+         print(i)
+except:
+        pass
+        
+w = v.get_feature_names_out()
+#df = pd.DataFrame(X.toarray(), columns=w)
+#print(df.head())
+#z = X.toarray()
+
+#X_train5 = vectorizer_custom.fit_transform(x_train5)
+#X_test5 = vectorizer_custom.transform(x_test5)
+
+#rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
+#svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
+#print("Prediction 5, custom tokenizer, question 2e")
+#print_all_results(rf_predictions5, svm_predictions5, y_test5)
