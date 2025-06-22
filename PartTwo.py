@@ -1,5 +1,7 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import svm
 from sklearn.model_selection import train_test_split
@@ -70,10 +72,12 @@ second_svm_predictions = svm_model_train_and_predict(X_train2, y_train2, X_test2
 print_all_results(second_rf_predictions, second_svm_predictions, y_test2)
 
 # first I'm going to try my tokeniser from Part 1, just to see what happens
+"""
 import spacy
 from spacy.tokenizer import Tokenizer
 nlp = spacy.load("en_core_web_sm")
 #nlp.max_length = 12000
+
 
 vectorizer_third = TfidfVectorizer(max_features=3000, tokenizer=nlp)
 x_train3, x_test3, y_train3, y_test3 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
@@ -83,3 +87,52 @@ X_test3 = vectorizer_third.transform(x_test3)
 third_rf_predictions = rf_model_train_and_predict(X_train3, y_train3, X_test3)
 third_svm_predictions = svm_model_train_and_predict(X_train3, y_train3, X_test3)
 print_all_results(third_rf_predictions, third_svm_predictions, y_test3)
+"""
+
+# now attempting to improve performance by doing feature selection
+# I've read through the official scikitlearn documentation again and got these ideas from there
+"""
+from sklearn.feature_selection import VarianceThreshold
+sel = VarianceThreshold(threshold=(.8 * (1 - .8)))
+sel.fit_transform(X)
+"""
+
+#def my_tokeniser():
+"""
+# I got this idea from the scikitlearn documentation - https://scikit-learn.org/stable/modules/feature_selection.html
+def feature_select(X, y):
+    from sklearn.feature_selection import SelectKBest
+    from sklearn.feature_selection import f_classif
+    vectorizer_second = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3))
+
+    X_vector = vectorizer_second.fit_transform(X)
+    X_new = SelectKBest(f_classif, k=3000).fit(X_vector, y)
+    return X_new
+
+x_train4, x_test4, y_train4, y_test4 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
+X_selectBest = feature_select(x_train4, y_train4)
+x_train4a = TfidfVectorizer(min_df = 1000, vocabulary=X_selectBest)
+X_train4b = x_train4a.fit_transform(x_train4)
+#vectorizer_second.fit_transform(X_train4)
+X_test4 = feature_select(x_test4, y_test4)
+
+fourth_rf_predictions = rf_model_train_and_predict(X_train4b, y_train4, X_test4)
+fourth_svm_predictions = svm_model_train_and_predict(X_train4b, y_train4, X_test4)
+print_all_results(fourth_rf_predictions, fourth_svm_predictions, y_test4)
+"""
+"""
+def custom_tokenizer():
+    counted_doc = CountVectorizer(input = 'custom', encoding='utf-8', decode_error='strict', strip_accents=None, lowercase=True, preprocessor=None, tokenizer=None, stop_words='english', token_pattern='(?u)\\b\\w\\w+\\b', ngram_range=(1, 3), analyzer='word', max_df=1.0, min_df=1, max_features=5000, vocabulary=None, binary=False)
+    final_doc = TfidfTransformer(counted_doc, norm='l2', use_idf=True, smooth_idf=True, sublinear_tf=False)
+    return final_doc
+
+my_tokeniser = custom_tokenizer()
+x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
+
+X_train5 = my_tokeniser.fit_transform(x_train5)
+X_test5 = vectorizer_second.transform(x_test5)
+
+rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
+svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
+print_all_results(rf_predictions5, svm_predictions5, y_test5)
+"""
