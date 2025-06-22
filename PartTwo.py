@@ -120,19 +120,26 @@ fourth_rf_predictions = rf_model_train_and_predict(X_train4b, y_train4, X_test4)
 fourth_svm_predictions = svm_model_train_and_predict(X_train4b, y_train4, X_test4)
 print_all_results(fourth_rf_predictions, fourth_svm_predictions, y_test4)
 """
-"""
-def custom_tokenizer():
-    counted_doc = CountVectorizer(input = 'custom', encoding='utf-8', decode_error='strict', strip_accents=None, lowercase=True, preprocessor=None, tokenizer=None, stop_words='english', token_pattern='(?u)\\b\\w\\w+\\b', ngram_range=(1, 3), analyzer='word', max_df=1.0, min_df=1, max_features=5000, vocabulary=None, binary=False)
-    final_doc = TfidfTransformer(counted_doc, norm='l2', use_idf=True, smooth_idf=True, sublinear_tf=False)
-    return final_doc
 
-my_tokeniser = custom_tokenizer()
+# copied this sample code from the scikitlearn docs, then customised it: https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html#sklearn.feature_extraction.text.TfidfTransformer
+def custom_tokenizer(doc, features):
+    from sklearn.feature_extraction.text import TfidfTransformer
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.pipeline import Pipeline
+    corpus = doc
+    vocabulary = features
+    pipe = Pipeline([('count', CountVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), vocabulary=vocabulary, lowercase =False)),
+                    ('tfid', TfidfTransformer())]).fit(corpus)
+    pipe['count'].transform(corpus).toarray()
+    pipe['tfid'].idf_
+    pipe.transform(corpus).shape
+    return pipe
+
+
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
+X_train5 = custom_tokenizer(x_train5, x_train5)
+X_test5 = custom_tokenizer(x_test5, x_test5)
 
-X_train5 = my_tokeniser.fit_transform(x_train5)
-X_test5 = vectorizer_second.transform(x_test5)
-
-rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
-svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
-print_all_results(rf_predictions5, svm_predictions5, y_test5)
-"""
+#rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
+#svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
+#print_all_results(rf_predictions5, svm_predictions5, y_test5)
