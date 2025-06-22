@@ -42,10 +42,10 @@ def svm_model_train_and_predict(xtrain, ytrain, xtest):
     return svm_predictions
 
 def print_all_results(rf_predictions, svm_predictions, ytest):
-    f1_score_rf = f1_score(ytest, rf_predictions, average=None)
-    f1_score_svm = f1_score(ytest, svm_predictions, average=None)
+    f1_score_rf = f1_score(ytest, rf_predictions, average=None, zero_division=0)
+    f1_score_svm = f1_score(ytest, svm_predictions, average=None, zero_division=0)
     report_rf = classification_report(ytest, rf_predictions,zero_division=0)
-    report_svm = classification_report(svm_predictions,ytest)
+    report_svm = classification_report(svm_predictions,ytest, zero_division=0)
 
     print("RF f1")
     print(f1_score_rf)
@@ -155,15 +155,19 @@ def custom_tokenizer(doc, features, train_or_test):
 
 #def custom_tokenizer():
 
-    #return tokenizer
+#return tokenizer
 
 
 
 #vectorizer_custom = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), tokenizer=custom_tokenizer)
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
 
-v = CountVectorizer(ngram_range=(1,3), encoding="utf-8", decode_error='replace')
+v = CountVectorizer(max_features=3000, stop_words='english', ngram_range=(1,3), encoding="utf-8", decode_error='replace')
+from sklearn.feature_selection import VarianceThreshold
+
 X = v.fit_transform(x_train5)
+sel = VarianceThreshold(threshold=(.8 * (1 - .8))) # added feature selection, performance decreased from 0.84 to 0.78
+X = sel.fit_transform(X)
 """
 try:
     #z = v.vocabulary_
@@ -194,7 +198,8 @@ except:
 
 X_train5 = b
 X_test5a = v.transform(x_test5)
-X_test5 = a.transform(X_test5a) #transform?
+X_test5b = sel.transform(X_test5a)
+X_test5 = a.transform(X_test5b)
 
 rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
 svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
