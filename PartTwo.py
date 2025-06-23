@@ -109,14 +109,17 @@ def custom_tokenizer_entities(doc):
                 tokens.append(i.lemma_)
     return tokens
 
-def custom_tokenizer_objects(doc, objects):
+# the idea is that MPs are very likely to refer to particular names, e.g. to their constituency - I thought it might be useful in identifying their party
+def custom_tokenizer_objects(doc):
     t = nlp(doc)
     tokens = []
-    # tokens_to_remove = ['\n', 'hon.', 'hon', 'Hon.' 'speaker', 'gentleman', 'lady' 'prime', 'minister']
+    tokens_to_remove = ['hon', 'speaker']
     for i in t:
-        if i in t.noun_chunks:
-            tok = i.lemma_
-            tokens.append(i.lemma_)
+        if not i.is_stop and not i.is_punct and len(i) > 2:
+            if i.pos_ == "NOUN" or i.pos_ == "PROPN" or i.pos == "ADJ" or i.pos == "VERB":
+                if not i.lemma_ in tokens_to_remove:
+                    tok = i.lemma_
+                    tokens.append(i.lemma_)
     return tokens
 
 def find_adjectives(doc):
@@ -131,7 +134,7 @@ def find_adjectives(doc):
                 all_adjectives[token_text] += 1
     #print(all_adjectives)
     return all_adjectives
-
+"""
 def find_objects(doc):
     # I saw the idea of noun chunks somewhere in the documentation, thought it might be better than just getting nouns
     e = ""
@@ -145,7 +148,7 @@ def find_objects(doc):
             all_objects.add(i)
     #print(all_adjectives)
     return all_objects
-
+"""
 #vectorizer_custom = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), tokenizer=custom_tokenizer)
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
 #tk5 = custom_tokenizer(str(x_train5))
