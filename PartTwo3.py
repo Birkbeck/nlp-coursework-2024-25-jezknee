@@ -191,8 +191,8 @@ def custom_tokenizer_entities(doc):
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
 #tk5 = custom_tokenizer(str(x_train5))
 print("creating tokeniser...")
-v = CountVectorizer(max_features=3000, ngram_range=(1,5), encoding="utf-8", tokenizer=custom_tokenizer)
-v_ent = CountVectorizer(max_features=3000, ngram_range=(1,5), encoding="utf-8", tokenizer=custom_tokenizer_entities)
+v = CountVectorizer(max_features=3000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
+v_ent = CountVectorizer(max_features=3000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
 #from sklearn.feature_selection import VarianceThreshold
 print("fitting model...")
 X = v.fit_transform(x_train5)
@@ -200,7 +200,7 @@ print("doing features selection...")
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import SelectPercentile
 from sklearn.feature_selection import f_classif
-sel = SelectPercentile(f_classif, 0.1).fit_transform(X, y_train5)
+sel = SelectPercentile(0.1).fit_transform(X, y_train5)
 #sel = VarianceThreshold(threshold=(.8 * (1 - .8))) # added feature selection, performance decreased from 0.84 to 0.78
 #X = sel.fit_transform(X)
 
@@ -236,8 +236,8 @@ except:
 #z = X.toarray()
 print("fitting test data...")
 X_train5 = b
-X_test5a = v.transform(x_test5)
-X_test5b = X_test5a #sel.transform(X_test5a)
+X_test5a = v_ent.transform(x_test5)
+X_test5b = SelectPercentile(0.1).transform(X_test5a) # X_test5a
 print("transforming fitted test data")
 X_test5 = a.transform(X_test5b)
 print("training Random Forest model...")
