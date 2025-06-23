@@ -161,7 +161,9 @@ def custom_tokenizer(doc):
     t = nlp(doc)
     tokens = []
     for i in t:
-        tokens.append(i.lemma_)
+        if not i.is_stop or not i.is_punct:
+            tok = i.lemma_
+            tokens.append(i.lemma_)
     return tokens
 
 
@@ -179,12 +181,12 @@ def custom_tokenizer(doc):
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
 #tk5 = custom_tokenizer(str(x_train5))
 print("tokenising documents...")
-v = CountVectorizer(max_features=3000, ngram_range=(1,3), encoding="utf-8", decode_error='replace', tokenizer=custom_tokenizer)
+v = CountVectorizer(max_features=3000, ngram_range=(1,5), encoding="utf-8", tokenizer=custom_tokenizer)
 from sklearn.feature_selection import VarianceThreshold
 print("fitting model...")
 X = v.fit_transform(x_train5)
 print("doing features selection...")
-sel = VarianceThreshold(threshold=(.6 * (1 - .6))) # added feature selection, performance decreased from 0.84 to 0.78
+sel = VarianceThreshold(threshold=(.8 * (1 - .8))) # added feature selection, performance decreased from 0.84 to 0.78
 X = sel.fit_transform(X)
 
 from sklearn.feature_selection import SelectKBest
