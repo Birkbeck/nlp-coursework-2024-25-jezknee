@@ -116,7 +116,7 @@ def custom_tokenizer_objects(doc):
     tokens_to_remove = ['hon', 'speaker']
     for i in t:
         if not i.is_stop and not i.is_punct and len(i) > 2:
-            if i.pos_ == "NOUN" or i.pos_ == "PROPN" or i.pos == "ADJ" or i.pos == "VERB":
+            if i.pos_ == "NOUN" or i.pos_ == "PROPN" or i.pos == "ADJ" or i.pos == "VERB" or i.pos == "ADV":
                 if not i.lemma_ in tokens_to_remove:
                     tok = i.lemma_
                     tokens.append(i.lemma_)
@@ -156,7 +156,7 @@ x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech
 print("creating tokeniser...")
 #v = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
 #v_ent = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
-v_obj = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
+v_obj = CountVectorizer(max_features=2500, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
 from sklearn.feature_selection import VarianceThreshold
 print("fitting model...")
 X = v_obj.fit_transform(x_train5)
