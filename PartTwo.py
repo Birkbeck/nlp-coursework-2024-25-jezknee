@@ -156,7 +156,7 @@ x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech
 print("creating tokeniser...")
 #v = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
 #v_ent = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
-v_obj = CountVectorizer(max_features=2500, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
+v_obj = CountVectorizer(ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
 from sklearn.feature_selection import VarianceThreshold
 print("fitting model...")
 X = v_obj.fit_transform(x_train5)
@@ -167,7 +167,7 @@ print("doing features selection...")
 #from sklearn.feature_selection import SelectPercentile
 #from sklearn.feature_selection import f_classif
 #sel = SelectPercentile(f_classif, 0.1).fit_transform(X, y_train5)
-sel = VarianceThreshold() # removing any words that don't explain any variance
+sel = VarianceThreshold(0.001) # removing any words that don't explain any variance
 #X = sel.fit_transform(X)
 
 a = TfidfTransformer()
