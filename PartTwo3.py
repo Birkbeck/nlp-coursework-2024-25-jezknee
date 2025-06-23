@@ -200,7 +200,7 @@ print("doing features selection...")
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import SelectPercentile
 from sklearn.feature_selection import f_classif
-sel = SelectPercentile(0.1).fit_transform(X, y_train5)
+sel = SelectPercentile(f_classif,0.1).fit_transform(X, y_train5)
 #sel = VarianceThreshold(threshold=(.8 * (1 - .8))) # added feature selection, performance decreased from 0.84 to 0.78
 #X = sel.fit_transform(X)
 

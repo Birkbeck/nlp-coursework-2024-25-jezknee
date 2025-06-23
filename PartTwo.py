@@ -160,6 +160,7 @@ nlp.max_length = 1200000
 def custom_tokenizer(doc):
     t = nlp(doc)
     tokens = []
+    tokens_to_remove = ['\n', ]
     for i in t:
         if not i.is_stop or not i.is_punct:
             tok = i.lemma_
@@ -169,33 +170,25 @@ def custom_tokenizer(doc):
 def custom_tokenizer_entities(doc):
     t = nlp(doc)
     tokens = []
+    to_remove = ['\n', 'Hon.', 'Hon']
     for i in t:
         if not i.is_stop or not i.is_punct:
-            if i in doc.ents:
+            if i in t.ents:
                 tok = i.lemma_
                 tokens.append(i.lemma_)
     return tokens
-
-
-    """
-    from nltk.tokenize import RegexpTokenizer
-    tk = RegexpTokenizer(r'(?u)\\b\\w\\w+\\b')
-    """
-    return nlp
-
-#return tokenizer
-
-
 
 #vectorizer_custom = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), tokenizer=custom_tokenizer)
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
 #tk5 = custom_tokenizer(str(x_train5))
 print("creating tokeniser...")
-v = CountVectorizer(max_features=3000, ngram_range=(1,5), encoding="utf-8", tokenizer=custom_tokenizer)
-v_ent = CountVectorizer(max_features=3000, ngram_range=(1,5), encoding="utf-8", tokenizer=custom_tokenizer_entities)
-#from sklearn.feature_selection import VarianceThreshold
+v = CountVectorizer(max_features=3000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
+v_ent = CountVectorizer(max_features=3000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
+from sklearn.feature_selection import VarianceThreshold
 print("fitting model...")
 X = v.fit_transform(x_train5)
+X_tokens = v.get_feature_names_out()
+print(X_tokens)
 print("doing features selection...")
 #from sklearn.feature_selection import SelectKBest
 #from sklearn.feature_selection import SelectPercentile
@@ -204,38 +197,14 @@ print("doing features selection...")
 #sel = VarianceThreshold(threshold=(.8 * (1 - .8))) # added feature selection, performance decreased from 0.84 to 0.78
 #X = sel.fit_transform(X)
 
-
-
-
-"""
-try:
-    #z = v.vocabulary_
-    for i in X:
-         print(i)
-except:
-        pass
-        
-w = v.get_feature_names_out()
-"""
-
 a = TfidfTransformer()
 print("transforming fitted model...")
 b = a.fit_transform(X)
 
-
-"""
-try:
-    for i in b:
-         print(i)
-except:
-        pass
-"""
-
-#df = pd.DataFrame(X.toarray(), columns=w)
-#print(df.head())
-#z = X.toarray()
 print("fitting test data...")
 X_train5 = b
+
+
 X_test5a = v.transform(x_test5)
 X_test5b = X_test5a #sel.transform(X_test5a)
 print("transforming fitted test data")
