@@ -153,11 +153,11 @@ def custom_tokenizer(doc, features, train_or_test):
     #return X_output
 """
 import spacy
-#from spacy.tokenizer import Tokenizer
 nlp = spacy.load("en_core_web_sm")
 nlp.max_length = 1200000
 
 def custom_tokenizer(doc):
+    nlp.max_length = 1200000
     t = nlp(doc)
     tokens = []
     for i in t:
@@ -197,10 +197,10 @@ v_ent = CountVectorizer(max_features=3000, ngram_range=(1,5), encoding="utf-8", 
 print("fitting model...")
 X = v.fit_transform(x_train5)
 print("doing features selection...")
-#from sklearn.feature_selection import SelectKBest
-#from sklearn.feature_selection import SelectPercentile
-#from sklearn.feature_selection import f_classif
-#sel = SelectPercentile(f_classif, 0.1).fit_transform(X, y_train5)
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import SelectPercentile
+from sklearn.feature_selection import f_classif
+sel = SelectPercentile(f_classif, 0.1).fit_transform(X, y_train5)
 #sel = VarianceThreshold(threshold=(.8 * (1 - .8))) # added feature selection, performance decreased from 0.84 to 0.78
 #X = sel.fit_transform(X)
 

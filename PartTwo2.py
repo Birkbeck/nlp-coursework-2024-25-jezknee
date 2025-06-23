@@ -152,12 +152,12 @@ def custom_tokenizer(doc, features, train_or_test):
     #X_output = pipe.transform(corpus)
     #return X_output
 """
-import spacy
-#from spacy.tokenizer import Tokenizer
-nlp = spacy.load("en_core_web_sm")
-nlp.max_length = 1200000
 
 def custom_tokenizer(doc):
+    import spacy
+    #from spacy.tokenizer import Tokenizer
+    nlp = spacy.load("en_core_web_sm")
+    nlp.max_length = 1200000
     t = nlp(doc)
     tokens = []
     for i in t:
@@ -167,6 +167,10 @@ def custom_tokenizer(doc):
     return tokens
 
 def custom_tokenizer_entities(doc):
+    import spacy
+    #from spacy.tokenizer import Tokenizer
+    nlp = spacy.load("en_core_web_sm")
+    nlp.max_length = 1200000
     t = nlp(doc)
     tokens = []
     for i in t:
@@ -195,7 +199,7 @@ v = CountVectorizer(max_features=3000, ngram_range=(1,5), encoding="utf-8", toke
 v_ent = CountVectorizer(max_features=3000, ngram_range=(1,5), encoding="utf-8", tokenizer=custom_tokenizer_entities)
 #from sklearn.feature_selection import VarianceThreshold
 print("fitting model...")
-X = v.fit_transform(x_train5)
+X = v_ent.fit_transform(x_train5)
 print("doing features selection...")
 #from sklearn.feature_selection import SelectKBest
 #from sklearn.feature_selection import SelectPercentile
@@ -236,7 +240,7 @@ except:
 #z = X.toarray()
 print("fitting test data...")
 X_train5 = b
-X_test5a = v.transform(x_test5)
+X_test5a = v_ent.transform(x_test5)
 X_test5b = X_test5a #sel.transform(X_test5a)
 print("transforming fitted test data")
 X_test5 = a.transform(X_test5b)
