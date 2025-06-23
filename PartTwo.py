@@ -75,126 +75,96 @@ second_svm_predictions = svm_model_train_and_predict(X_train2, y_train2, X_test2
 print("Prediction 2: slightly improved model, question 2d")
 print_all_results(second_rf_predictions, second_svm_predictions, y_test2)
 
-"""
-# first I'm going to try my tokeniser from Part 1, just to see what happens
-
-import spacy
-from spacy.tokenizer import Tokenizer
-nlp = spacy.load("en_core_web_sm")
-nlp.max_length = 20000
-#nlp.max_length = 12000
-
-
-vectorizer_third = TfidfVectorizer(max_features=3000, tokenizer=nlp)
-x_train3, x_test3, y_train3, y_test3 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
-X_train3 = vectorizer_third.fit_transform(x_train3)
-X_test3 = vectorizer_third.transform(x_test3)
-
-third_rf_predictions = rf_model_train_and_predict(X_train3, y_train3, X_test3)
-third_svm_predictions = svm_model_train_and_predict(X_train3, y_train3, X_test3)
-print("Prediction 3: PartOne nlp tokenizer")
-print_all_results(third_rf_predictions, third_svm_predictions, y_test3)
-
-"""
 # now attempting to improve performance by doing feature selection
 # I've read through the official scikitlearn documentation again and got these ideas from there
-"""
-from sklearn.feature_selection import VarianceThreshold
-sel = VarianceThreshold(threshold=(.8 * (1 - .8)))
-sel.fit_transform(X)
-"""
 
-#def my_tokeniser():
-"""
-# I got this idea from the scikitlearn documentation - https://scikit-learn.org/stable/modules/feature_selection.html
-def feature_select(X, y):
-    from sklearn.feature_selection import SelectKBest
-    from sklearn.feature_selection import f_classif
-    vectorizer_second = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3))
-
-    X_vector = vectorizer_second.fit_transform(X)
-    X_new = SelectKBest(f_classif, k=3000).fit(X_vector, y)
-    return X_new
-
-x_train4, x_test4, y_train4, y_test4 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
-X_selectBest = feature_select(x_train4, y_train4)
-x_train4a = TfidfVectorizer(min_df = 1000, vocabulary=X_selectBest)
-X_train4b = x_train4a.fit_transform(x_train4)
-#vectorizer_second.fit_transform(X_train4)
-X_test4 = feature_select(x_test4, y_test4)
-
-fourth_rf_predictions = rf_model_train_and_predict(X_train4b, y_train4, X_test4)
-fourth_svm_predictions = svm_model_train_and_predict(X_train4b, y_train4, X_test4)
-print_all_results(fourth_rf_predictions, fourth_svm_predictions, y_test4)
-"""
-"""
-# copied this sample code from the scikitlearn docs, then customised it: https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html#sklearn.feature_extraction.text.TfidfTransformer
-def custom_tokenizer(doc, features, train_or_test):
-    from sklearn.feature_extraction.text import TfidfTransformer
-    from sklearn.feature_extraction.text import CountVectorizer
-    from sklearn.pipeline import Pipeline
-    corpus = doc
-    # originally an error - seems that vocabulary needs to consist of unique values - got this idea from https://github.com/scikit-learn/scikit-learn/issues/2634
-    vocabulary = list(set(features))
-    pipe = Pipeline([('count', CountVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), vocabulary=vocabulary, lowercase =False)),
-                    ('tfid', TfidfTransformer())]).fit(corpus)
-    if train_or_test:
-        pipe['count'].fit_transform(doc)
-        #feature_names = pipe['count'].get_feature_names_out()
-        #print(feature_names)
-        #print(pipe['count2'].toarray())
-    elif not train_or_test:
-        pipe['count'].transform(doc)
-
-    #df = pd.DataFrame(pipe['tfid'].toarray(), columns = pipe.get_feature_names_out())
-    #print(df)
-    pipe['tfid'].idf_
-    #X_output = pipe.transform(corpus)
-    #return X_output
-"""
 import spacy
 #from spacy.tokenizer import Tokenizer
 nlp = spacy.load("en_core_web_sm")
-nlp.max_length = 1200000
+nlp.max_length = 1200000000
 
 def custom_tokenizer(doc):
     t = nlp(doc)
     tokens = []
-    tokens_to_remove = ['\n', ]
+    tokens_to_remove = ['\n', 'hon.', 'hon', 'Hon.' 'speaker', 'gentleman', 'lady' 'prime', 'minister'] # very common words
     for i in t:
         if not i.is_stop or not i.is_punct:
-            tok = i.lemma_
-            tokens.append(i.lemma_)
+            try:
+                i = i.lower()
+            except:
+                i = i
+            if i not in tokens_to_remove:
+                tok = i.lemma_
+                tokens.append(i.lemma_)
     return tokens
 
 def custom_tokenizer_entities(doc):
     t = nlp(doc)
     tokens = []
-    to_remove = ['\n', 'Hon.', 'Hon']
+    to_remove = ['\n', 'hon.', 'Hon', 'Hon.' 'speaker']
     for i in t:
-        if not i.is_stop or not i.is_punct:
+        if not i.is_stop or not i.is_punct or not i in to_remove:
             if i in t.ents:
                 tok = i.lemma_
                 tokens.append(i.lemma_)
     return tokens
 
+def custom_tokenizer_objects(doc, objects):
+    t = nlp(doc)
+    tokens = []
+    # tokens_to_remove = ['\n', 'hon.', 'hon', 'Hon.' 'speaker', 'gentleman', 'lady' 'prime', 'minister']
+    for i in t:
+        if i in t.noun_chunks:
+            tok = i.lemma_
+            tokens.append(i.lemma_)
+    return tokens
+
+def find_adjectives(doc):
+    # copied this from something I did in a class exercise
+    all_adjectives = dict()
+    for token in doc:
+        token_text = token.lemma_
+        if token.pos_ == "ADJ":
+            if token_text not in all_adjectives:
+                all_adjectives[token_text] = 1
+            elif token_text in all_adjectives:
+                all_adjectives[token_text] += 1
+    #print(all_adjectives)
+    return all_adjectives
+
+def find_objects(doc):
+    # I saw the idea of noun chunks somewhere in the documentation, thought it might be better than just getting nouns
+    e = ""
+    for j in doc:
+        e += j
+        e += " "
+    d = nlp(e)
+    all_objects = set()
+    for i in d.noun_chunks:
+        if i not in all_objects:
+            all_objects.add(i)
+    #print(all_adjectives)
+    return all_objects
+
 #vectorizer_custom = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), tokenizer=custom_tokenizer)
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
 #tk5 = custom_tokenizer(str(x_train5))
+#object_list = find_objects(x_train5)
 print("creating tokeniser...")
-v = CountVectorizer(max_features=3000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
-v_ent = CountVectorizer(max_features=3000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
+#v = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
+#v_ent = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
+v_obj = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
 from sklearn.feature_selection import VarianceThreshold
 print("fitting model...")
-X = v.fit_transform(x_train5)
-X_tokens = v.get_feature_names_out()
+X = v_obj.fit_transform(x_train5)
+X_tokens = v_obj.get_feature_names_out()
 print(X_tokens)
 print("doing features selection...")
 #from sklearn.feature_selection import SelectKBest
 #from sklearn.feature_selection import SelectPercentile
 #from sklearn.feature_selection import f_classif
 #sel = SelectPercentile(f_classif, 0.1).fit_transform(X, y_train5)
-#sel = VarianceThreshold(threshold=(.8 * (1 - .8))) # added feature selection, performance decreased from 0.84 to 0.78
+sel = VarianceThreshold() # removing any words that don't explain any variance
 #X = sel.fit_transform(X)
 
 a = TfidfTransformer()
@@ -202,13 +172,13 @@ print("transforming fitted model...")
 b = a.fit_transform(X)
 
 print("fitting test data...")
-X_train5 = b
+X_train5 = sel.fit_transform(b)
 
 
-X_test5a = v.transform(x_test5)
-X_test5b = X_test5a #sel.transform(X_test5a)
+X_test5a = v_obj.transform(x_test5)
+X_test5b = a.transform(X_test5a)
 print("transforming fitted test data")
-X_test5 = a.transform(X_test5b)
+X_test5 = sel.transform(X_test5b)
 print("training Random Forest model...")
 rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
 print("training SVM model...")
