@@ -14,6 +14,7 @@ text = pd.read_csv(r"C:\Users\jezkn\OneDrive\Documents\Birkbeck\Work\Natural Lan
 hansard_df = pd.DataFrame(text)
 hansard_df = hansard_df.replace("Labour (Co-op)", "Labour")
 filtered_hansard_df = hansard_df[hansard_df["party"] != "Speaker"]
+filtered_hansard_df = filtered_hansard_df[filtered_hansard_df["speech_class"] == "Speech"]
 most_common_parties = filtered_hansard_df["party"].value_counts().index.tolist()[:4]
 common_hansard_df = hansard_df[hansard_df["party"].isin(most_common_parties)]
 final_hansard_df = common_hansard_df[common_hansard_df["speech"].str.len() >= 1000]
@@ -156,18 +157,18 @@ x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech
 print("creating tokeniser...")
 #v = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
 #v_ent = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
-v_obj = CountVectorizer(ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
+v_obj = CountVectorizer(max_features=1000,ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
 from sklearn.feature_selection import VarianceThreshold
 print("fitting model...")
 X = v_obj.fit_transform(x_train5)
 X_tokens = v_obj.get_feature_names_out()
-print(X_tokens)
+#print(X_tokens)
 print("doing features selection...")
 #from sklearn.feature_selection import SelectKBest
 #from sklearn.feature_selection import SelectPercentile
 #from sklearn.feature_selection import f_classif
 #sel = SelectPercentile(f_classif, 0.1).fit_transform(X, y_train5)
-sel = VarianceThreshold(0.001) # removing any words that don't explain any variance
+sel = VarianceThreshold() # removing any words that don't explain any variance
 #X = sel.fit_transform(X)
 
 a = TfidfTransformer()
