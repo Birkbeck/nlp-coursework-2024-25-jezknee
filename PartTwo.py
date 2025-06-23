@@ -153,7 +153,23 @@ def custom_tokenizer(doc, features, train_or_test):
     #return X_output
 """
 
-#def custom_tokenizer():
+def custom_tokenizer(doc):
+    import spacy
+    from spacy.tokenizer import Tokenizer
+    nlp = spacy.load("en_core_web_sm")
+    nlp.max_length = 1200000
+    t = nlp(doc)
+    tokens = []
+    for i in t:
+        tokens.append(i.lemma)
+    return tokens
+
+
+    """
+    from nltk.tokenize import RegexpTokenizer
+    tk = RegexpTokenizer(r'(?u)\\b\\w\\w+\\b')
+    """
+    return nlp
 
 #return tokenizer
 
@@ -161,13 +177,18 @@ def custom_tokenizer(doc, features, train_or_test):
 
 #vectorizer_custom = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), tokenizer=custom_tokenizer)
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
-
-v = CountVectorizer(max_features=3000, stop_words='english', ngram_range=(1,3), encoding="utf-8", decode_error='replace')
+#tk5 = custom_tokenizer(str(x_train5))
+v = CountVectorizer(max_features=3000, stop_words='english', ngram_range=(1,3), encoding="utf-8", decode_error='replace', tokenizer=custom_tokenizer)
 from sklearn.feature_selection import VarianceThreshold
 
 X = v.fit_transform(x_train5)
-sel = VarianceThreshold(threshold=(.8 * (1 - .8))) # added feature selection, performance decreased from 0.84 to 0.78
+sel = VarianceThreshold(threshold=(.6 * (1 - .6))) # added feature selection, performance decreased from 0.84 to 0.78
 X = sel.fit_transform(X)
+
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_classif
+
+
 """
 try:
     #z = v.vocabulary_
