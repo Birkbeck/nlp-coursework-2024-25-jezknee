@@ -118,14 +118,11 @@ def custom_tokenizer_entities(doc):
 def custom_tokenizer_objects(doc):
     t = nlp(doc)
     tokens = []
-    tokens_to_remove = []
-    """i.pos_ == "NOUN" or i.pos_ == "PROPN" or"""
     for i in t:
         if not i.is_stop and not i.is_punct:
-            if  i.pos == "ADJ" or i.pos == "VERB" or i.pos == "ADV":
-                if not i.lemma_ in tokens_to_remove:
-                    tok = i.lemma_
-                    tokens.append(i.lemma_)
+            if  i.pos_ in ("NOUN", "PROPN", "ADJ", "VERB", "ADV"):
+                tok = i.lemma_
+                tokens.append(i.lemma_)
     return tokens
 
 
