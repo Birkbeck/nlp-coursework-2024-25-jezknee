@@ -79,6 +79,7 @@ import spacy
 nlp = spacy.load("en_core_web_sm")
 nlp.max_length = 1200000000
 
+# I saw the preprocessing parameter in the CountVectorizer documentation, and decided to remove the bracketed annotations after reading through the speeches myself
 # got my regex from https://stackoverflow.com/questions/14596884/remove-text-between-and
 # I have used regex quite a few times before, but it takes me a long time to figure out, and I decided doing it myself wasn't really the point of this assignment!
 def custom_preprocessor(doc):
