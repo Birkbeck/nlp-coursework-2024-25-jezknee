@@ -7,6 +7,7 @@ from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from sklearn.metrics import classification_report
+from pathlib import Path
 
 pd.set_option("display.max_columns", None)
 
@@ -46,7 +47,7 @@ def print_all_results(rf_predictions, svm_predictions, ytest):
     f1_score_rf = f1_score(ytest, rf_predictions, average=None, zero_division=0)
     f1_score_svm = f1_score(ytest, svm_predictions, average=None, zero_division=0)
     report_rf = classification_report(ytest, rf_predictions,zero_division=0)
-    report_svm = classification_report(svm_predictions,ytest, zero_division=0)
+    report_svm = classification_report(ytest, svm_predictions, zero_division=0)
 
     print("RF f1")
     print(f1_score_rf)
@@ -114,7 +115,7 @@ def custom_tokenizer_entities(doc):
 def custom_tokenizer_objects(doc):
     t = nlp(doc)
     tokens = []
-    tokens_to_remove = ['hon', 'speaker']
+    tokens_to_remove = []
     for i in t:
         if not i.is_stop and not i.is_punct and len(i) > 2:
             if i.pos_ == "NOUN" or i.pos_ == "PROPN" or i.pos == "ADJ" or i.pos == "VERB" or i.pos == "ADV":
@@ -157,11 +158,20 @@ x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech
 print("creating tokeniser...")
 #v = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
 #v_ent = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
-v_obj = CountVectorizer(max_features=1000,ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
+v_obj = CountVectorizer(max_features=5000,ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
 from sklearn.feature_selection import VarianceThreshold
 print("fitting model...")
 X = v_obj.fit_transform(x_train5)
-X_tokens = v_obj.get_feature_names_out()
+try:
+    X_tokens = b.get_feature_names_out()
+    count = 0
+    for i in X_tokens:
+        count += 1
+    print(count)
+except:
+    print("could not print count of features")
+
+
 #print(X_tokens)
 print("doing features selection...")
 #from sklearn.feature_selection import SelectKBest
@@ -174,6 +184,20 @@ sel = VarianceThreshold() # removing any words that don't explain any variance
 a = TfidfTransformer()
 print("transforming fitted model...")
 b = a.fit_transform(X)
+
+store_path=Path.cwd() / "pickles" / "tfidf_model.pickle"
+b.to_pickle(store_path)
+
+try:
+    print("getting feature names")
+    X_tokens = b.get_feature_names_out()
+    print(X_tokens)
+    print("converting to array...")
+    b_array = b.idf_
+    print("printing array...")
+    print(b_array[:5])
+except:
+    print("couldnt get the array")
 
 print("fitting test data...")
 X_train5 = sel.fit_transform(b)
