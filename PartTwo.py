@@ -137,8 +137,9 @@ print("creating tokeniser...")
 #v_ent = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
 v_obj = CountVectorizer(max_features=5000,ngram_range=(1,3), min_df = 3, encoding="utf-8", tokenizer=custom_tokenizer_objects)
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.feature_selection import chi2
 a = TfidfTransformer()
-sel = VarianceThreshold() # removing any words that don't explain any variance
+#sel = VarianceThreshold() # removing any words that don't explain any variance
 #store_path=Path.cwd() / "pickles" / "tfidf_model.pickle"
 
 # I got lots of these tests from NLP Lecture 8, and then modified them a bit
@@ -168,9 +169,9 @@ except:
 
 #print(X_tokens)
 print("doing features selection...")
-#from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import SelectKBest
 #from sklearn.feature_selection import SelectPercentile
-#from sklearn.feature_selection import f_classif
+#from sklearn.feature_selection import mutual_info_classif
 #sel = SelectPercentile(f_classif, 0.1).fit_transform(X, y_train5)
 #X = sel.fit_transform(X)
 
@@ -191,7 +192,7 @@ with open(store_path, 'wb') as f:
 with open(store_path, 'rb') as f:
     b = pickle.load(f)
 """
-
+"""
 try:
     print("getting feature names")
     X_tokens = b.get_feature_names_out()
@@ -202,19 +203,36 @@ try:
     print(b_array[:5])
 except:
     print("couldnt get the array")
+"""
+sel = SelectKBest(score_func=chi2,k=3000)
+print("removing features that do not explain any variance...")
+X_train5 = sel.fit_transform(b, y_train5)
 
+try:
+    #speech_index = 0
+    for speech in X_train5:
+        feature_names = v_obj.get_feature_names_out()
+        #print("Feature Names: ")
+        #print(feature_names)
+        word_count = np.asarray(speech.sum(axis=0)).ravel()
+        #print("Word Count: ")
+        word_freq = list(zip(feature_names, word_count))
+        #print(word_freq)
+        print("Top Words: ")
+        top_words = sorted(word_freq, key = lambda x: x[1], reverse = True)[:20]
+        print(top_words)
+except:
+    print("could not print count of features")
 
 print("fitting test data...")
-X_train5 = sel.fit_transform(b)
-
-
 X_test5a = v_obj.transform(x_test5)
 X_test5b = a.transform(X_test5a)
+X_test5c = sel.transform(X_test5b)
 print("transforming fitted test data")
-X_test5 = sel.transform(X_test5b)
+#X_test5 = sel.transform(X_test5b)
 print("training Random Forest model...")
-rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5)
+rf_predictions5 = rf_model_train_and_predict(X_train5, y_train5, X_test5c)
 print("training SVM model...")
-svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5)
+svm_predictions5 = svm_model_train_and_predict(X_train5, y_train5, X_test5c)
 print("Prediction 5, custom tokenizer, question 2e")
 print_all_results(rf_predictions5, svm_predictions5, y_test5)
