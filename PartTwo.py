@@ -8,6 +8,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from sklearn.metrics import classification_report
 from pathlib import Path
+import pickle
+import os
+import numpy as np
 
 pd.set_option("display.max_columns", None)
 
@@ -59,7 +62,7 @@ def print_all_results(rf_predictions, svm_predictions, ytest):
     print(report_svm)
 
 # GET THIS BIT BACK LATER
-
+"""
 first_rf_predictions = rf_model_train_and_predict(X_train, y_train, X_test)
 first_svm_predictions = svm_model_train_and_predict(X_train, y_train, X_test)
 print("Prediction 1: Original Tokenizer, question 2c")
@@ -76,7 +79,7 @@ second_rf_predictions = rf_model_train_and_predict(X_train2, y_train2, X_test2)
 second_svm_predictions = svm_model_train_and_predict(X_train2, y_train2, X_test2)
 print("Prediction 2: slightly improved model, question 2d")
 print_all_results(second_rf_predictions, second_svm_predictions, y_test2)
-
+"""
 # now attempting to improve performance by doing feature selection
 # I've read through the official scikitlearn documentation again and got these ideas from there
 
@@ -124,33 +127,7 @@ def custom_tokenizer_objects(doc):
                     tokens.append(i.lemma_)
     return tokens
 
-def find_adjectives(doc):
-    # copied this from something I did in a class exercise
-    all_adjectives = dict()
-    for token in doc:
-        token_text = token.lemma_
-        if token.pos_ == "ADJ":
-            if token_text not in all_adjectives:
-                all_adjectives[token_text] = 1
-            elif token_text in all_adjectives:
-                all_adjectives[token_text] += 1
-    #print(all_adjectives)
-    return all_adjectives
-"""
-def find_objects(doc):
-    # I saw the idea of noun chunks somewhere in the documentation, thought it might be better than just getting nouns
-    e = ""
-    for j in doc:
-        e += j
-        e += " "
-    d = nlp(e)
-    all_objects = set()
-    for i in d.noun_chunks:
-        if i not in all_objects:
-            all_objects.add(i)
-    #print(all_adjectives)
-    return all_objects
-"""
+
 #vectorizer_custom = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), tokenizer=custom_tokenizer)
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
 #tk5 = custom_tokenizer(str(x_train5))
@@ -158,16 +135,33 @@ x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech
 print("creating tokeniser...")
 #v = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
 #v_ent = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
-v_obj = CountVectorizer(max_features=5000,ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_objects)
+v_obj = CountVectorizer(max_features=5000,ngram_range=(1,3), min_df = 3, encoding="utf-8", tokenizer=custom_tokenizer_objects)
 from sklearn.feature_selection import VarianceThreshold
+a = TfidfTransformer()
+sel = VarianceThreshold() # removing any words that don't explain any variance
+#store_path=Path.cwd() / "pickles" / "tfidf_model.pickle"
+
+# I got lots of these tests from NLP Lecture 8, and then modified them a bit
 print("fitting model...")
 X = v_obj.fit_transform(x_train5)
+print("No. of features: ")
+print({X.shape[0]})
+print("Vocabulary size: ")
+print({X.shape[1]})
+
 try:
-    X_tokens = b.get_feature_names_out()
-    count = 0
-    for i in X_tokens:
-        count += 1
-    print(count)
+    #speech_index = 0
+    for speech in X:
+        feature_names = v_obj.get_feature_names_out()
+        #print("Feature Names: ")
+        #print(feature_names)
+        word_count = np.asarray(speech.sum(axis=0)).ravel()
+        #print("Word Count: ")
+        word_freq = list(zip(feature_names, word_count))
+        #print(word_freq)
+        print("Top Words: ")
+        top_words = sorted(word_freq, key = lambda x: x[1], reverse = True)[:20]
+        print(top_words)
 except:
     print("could not print count of features")
 
@@ -178,26 +172,37 @@ print("doing features selection...")
 #from sklearn.feature_selection import SelectPercentile
 #from sklearn.feature_selection import f_classif
 #sel = SelectPercentile(f_classif, 0.1).fit_transform(X, y_train5)
-sel = VarianceThreshold() # removing any words that don't explain any variance
 #X = sel.fit_transform(X)
 
-a = TfidfTransformer()
+
 print("transforming fitted model...")
 b = a.fit_transform(X)
 
-store_path=Path.cwd() / "pickles" / "tfidf_model.pickle"
-b.to_pickle(store_path)
+
+
+"""
+
+with open(store_path, 'wb') as f:
+    pickle.dump(b, f)
+
+
+
+
+with open(store_path, 'rb') as f:
+    b = pickle.load(f)
+"""
 
 try:
     print("getting feature names")
     X_tokens = b.get_feature_names_out()
-    print(X_tokens)
+    #print(X_tokens)
     print("converting to array...")
     b_array = b.idf_
     print("printing array...")
     print(b_array[:5])
 except:
     print("couldnt get the array")
+
 
 print("fitting test data...")
 X_train5 = sel.fit_transform(b)
