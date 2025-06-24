@@ -8,7 +8,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from sklearn.metrics import classification_report
 import numpy as np
-import re
 
 pd.set_option("display.max_columns", None)
 
@@ -81,6 +80,7 @@ nlp = spacy.load("en_core_web_sm")
 nlp.max_length = 1200000000
 
 # got my regex from https://stackoverflow.com/questions/14596884/remove-text-between-and
+# I have used regex quite a few times before, but it takes me a long time to figure out, and I decided doing it myself wasn't really the point of this assignment!
 def custom_preprocessor(doc):
     import re
     d = re.sub("[\(\[].*?[\)\]]", "", doc)
@@ -103,9 +103,12 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 a = TfidfTransformer()
 
-# I got lots of these tests from NLP Lecture 8, and then modified them a bit
 print("fitting model...")
 X = v_obj.fit_transform(x_train5)
+
+"""
+# I got lots of these tests from NLP Lecture 8, and then modified them a bit
+
 print("No. of features: ")
 print({X.shape[0]})
 print("Vocabulary size: ")
@@ -123,7 +126,7 @@ def get_vectorizer_info(X):
     except:
         print("could not print count of features")
 
-
+"""
 print("transforming fitted model...")
 b = a.fit_transform(X)
 print("doing features selection...")
@@ -131,25 +134,7 @@ print("doing features selection...")
 # I've read through the official scikitlearn documentation again and got these ideas from there
 sel = SelectKBest(score_func=chi2,k=1500)
 X_train5 = sel.fit_transform(b, y_train5)
-
-def get_scores(X):
-    try:
-        for i in X:
-            print("FS: getting feature names...")
-            feature_names = X.get_feature_names_out()
-            print("FS: getting chi2 scores...")
-            scores = i.scores_
-            feature_scores = np.asarray(i.average(axis=0)).ravel()
-            print("FS: calculating word scores...")
-            word_scores = list(zip(feature_names, feature_scores))
-            print("Top Words: ")
-            top_words = sorted(word_scores, key = lambda x: x[1], reverse = True)[:20]
-            print(top_words)
-    except:
-        print("Cannot get scores.")
-
-get_scores(X_train5)
-
+"""
 try:
     #speech_index = 0
     for speech in X_train5:
@@ -161,7 +146,7 @@ try:
         print(top_words)
 except:
     print("could not print count of features")
-
+"""
 print("fitting test data...")
 X_test5a = v_obj.transform(x_test5)
 X_test5b = a.transform(X_test5a)
