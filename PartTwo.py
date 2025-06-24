@@ -7,10 +7,8 @@ from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from sklearn.metrics import classification_report
-from pathlib import Path
-import pickle
-import os
 import numpy as np
+import re
 
 pd.set_option("display.max_columns", None)
 
@@ -26,7 +24,6 @@ final_hansard_df = common_hansard_df[common_hansard_df["speech"].str.len() >= 10
 print(final_hansard_df.shape)
 
 # originally copied the vectorizer code from a class project (lab 4), then modified it
-#t0 = time()
 vectorizer = TfidfVectorizer(max_features=3000, stop_words="english")
 
 x_train, x_test, y_train, y_test = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
@@ -61,7 +58,6 @@ def print_all_results(rf_predictions, svm_predictions, ytest):
     print("SVM classification report")
     print(report_svm)
 
-# GET THIS BIT BACK LATER
 
 first_rf_predictions = rf_model_train_and_predict(X_train, y_train, X_test)
 first_svm_predictions = svm_model_train_and_predict(X_train, y_train, X_test)
@@ -80,41 +76,16 @@ second_svm_predictions = svm_model_train_and_predict(X_train2, y_train2, X_test2
 print("Prediction 2: slightly improved model, question 2d")
 print_all_results(second_rf_predictions, second_svm_predictions, y_test2)
 
-# now attempting to improve performance by doing feature selection
-# I've read through the official scikitlearn documentation again and got these ideas from there
-
 import spacy
-#from spacy.tokenizer import Tokenizer
 nlp = spacy.load("en_core_web_sm")
 nlp.max_length = 1200000000
 
-def custom_tokenizer(doc):
-    t = nlp(doc)
-    tokens = []
-    tokens_to_remove = ['\n', 'hon.', 'hon', 'Hon.' 'speaker', 'gentleman', 'lady' 'prime', 'minister'] # very common words
-    for i in t:
-        if not i.is_stop or not i.is_punct:
-            try:
-                i = i.lower()
-            except:
-                i = i
-            if i not in tokens_to_remove:
-                tok = i.lemma_
-                tokens.append(i.lemma_)
-    return tokens
+# got my regex from https://stackoverflow.com/questions/14596884/remove-text-between-and
+def custom_preprocessor(doc):
+    import re
+    d = re.sub("[\(\[].*?[\)\]]", "", doc)
+    return d
 
-def custom_tokenizer_entities(doc):
-    t = nlp(doc)
-    tokens = []
-    to_remove = ['\n', 'hon.', 'Hon', 'Hon.' 'speaker']
-    for i in t:
-        if not i.is_stop or not i.is_punct or not i in to_remove:
-            if i in t.ents:
-                tok = i.lemma_
-                tokens.append(i.lemma_)
-    return tokens
-
-# the idea is that MPs are very likely to refer to particular names, e.g. to their constituency - I thought it might be useful in identifying their party
 def custom_tokenizer_objects(doc):
     t = nlp(doc)
     tokens = []
@@ -125,21 +96,12 @@ def custom_tokenizer_objects(doc):
                 tokens.append(i.lemma_)
     return tokens
 
-
-#vectorizer_custom = TfidfVectorizer(max_features=5000, stop_words="english", ngram_range=(1, 3), tokenizer=custom_tokenizer)
 x_train5, x_test5, y_train5, y_test5 = train_test_split(final_hansard_df["speech"], final_hansard_df["party"], test_size=0.3, random_state = 26, stratify=final_hansard_df["party"])
-#tk5 = custom_tokenizer(str(x_train5))
-#object_list = find_objects(x_train5)
 print("creating tokeniser...")
-#v = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer)
-#v_ent = CountVectorizer(max_features=2000, ngram_range=(1,3), encoding="utf-8", tokenizer=custom_tokenizer_entities)
-v_obj = CountVectorizer(max_features=5000,ngram_range=(1,3), min_df = 3, encoding="utf-8", tokenizer=custom_tokenizer_objects)
+v_obj = CountVectorizer(max_features=5000,ngram_range=(1,3), min_df = 3, encoding="utf-8", tokenizer=custom_tokenizer_objects, preprocessor=custom_preprocessor)
 from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import VarianceThreshold
 from sklearn.feature_selection import chi2
 a = TfidfTransformer()
-#sel = VarianceThreshold() # removing any words that don't explain any variance
-#store_path=Path.cwd() / "pickles" / "tfidf_model.pickle"
 
 # I got lots of these tests from NLP Lecture 8, and then modified them a bit
 print("fitting model...")
@@ -151,15 +113,10 @@ print({X.shape[1]})
 
 def get_vectorizer_info(X):
     try:
-        #speech_index = 0
         for speech in X:
             feature_names = v_obj.get_feature_names_out()
-            #print("Feature Names: ")
-            #print(feature_names)
             word_count = np.asarray(speech.sum(axis=0)).ravel()
-            #print("Word Count: ")
             word_freq = list(zip(feature_names, word_count))
-            #print(word_freq)
             print("Top Words: ")
             top_words = sorted(word_freq, key = lambda x: x[1], reverse = True)[:20]
             print(top_words)
@@ -170,8 +127,28 @@ def get_vectorizer_info(X):
 print("transforming fitted model...")
 b = a.fit_transform(X)
 print("doing features selection...")
-sel = SelectKBest(score_func=chi2,k=2500)
+# now attempting to improve performance by doing feature selection
+# I've read through the official scikitlearn documentation again and got these ideas from there
+sel = SelectKBest(score_func=chi2,k=1500)
 X_train5 = sel.fit_transform(b, y_train5)
+
+def get_scores(X):
+    try:
+        for i in X:
+            print("FS: getting feature names...")
+            feature_names = X.get_feature_names_out()
+            print("FS: getting chi2 scores...")
+            scores = i.scores_
+            feature_scores = np.asarray(i.average(axis=0)).ravel()
+            print("FS: calculating word scores...")
+            word_scores = list(zip(feature_names, feature_scores))
+            print("Top Words: ")
+            top_words = sorted(word_scores, key = lambda x: x[1], reverse = True)[:20]
+            print(top_words)
+    except:
+        print("Cannot get scores.")
+
+get_scores(X_train5)
 
 try:
     #speech_index = 0
