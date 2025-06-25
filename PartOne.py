@@ -191,6 +191,24 @@ def subjects_by_verb(doc, verb):
         token_counter += 1
     return verb_list
 
+def subjects_by_verb2(doc, verb):
+    subjects = dict()    
+    for token in doc:
+        if token.pos_ == "VERB":
+            if token.lemma_ == verb:
+                v = []
+                for t in token.lefts:
+                    if t.dep_ == "nsubj":
+                        v.append(t)
+                        if t.lemma_ not in subjects:
+                            subjects[t.lemma_] = 1
+                        elif t.lemma_ in subjects:
+                            subjects[t.lemma_] += 1
+    return subjects
+
+
+
+
 def object_verb_dependent(doc, verb):
     # at this point I went back to the spacy documentation and read it more carefully!
     # interpreting 'syntactic subject of to hear' as agent that does the hearing
@@ -256,7 +274,7 @@ def subjects_by_verb_pmi(doc, target_verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
     # Im going to interpret this as the PMI between "to hear" and the subject
 
-    verb_dict = object_verb_dependent(doc, target_verb)
+    verb_dict = subjects_by_verb2(doc, target_verb)
     verb_count = 0
     pmi_dict = dict()
     # total words in document
@@ -273,6 +291,7 @@ def subjects_by_verb_pmi(doc, target_verb):
         for token in doc:
             if token.lemma_ == key:
                 token_count += 1
+        # getting the number of times the verb and noun co-occur
         try:
             covalue = verb_dict[key]
         except:
@@ -307,7 +326,7 @@ def subjects_by_verb_pmi(doc, target_verb):
 
 def subjects_by_verb_count(doc, verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
-    verb_dict = object_verb_dependent(doc, verb)
+    verb_dict = subjects_by_verb2(doc, verb)
     results_top_10 = sorted(verb_dict.items(), key=lambda item: item[1], reverse = True)[:9]
     return results_top_10
 
