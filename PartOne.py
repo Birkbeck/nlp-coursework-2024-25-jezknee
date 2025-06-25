@@ -75,7 +75,6 @@ def count_syl(word, d):
 
     # should also take the word out of the total words count?
     # need to split these into morphemes instead of full words
-    pass
 
 def read_novels(path=Path.cwd() / "texts" / "novels"):
     """Reads texts from a directory of .txt files and returns a DataFrame with the text, title,
@@ -171,29 +170,12 @@ def get_fks(df):
         results[row["title"]] = round(fk_level(row["text"], cmudict), 4)
     return results
 
-def subjects_by_verb(doc, verb):
-    temp_counter = -2
-    token_counter = 0
-    verb_list = dict()
-    for token in doc:
-        if token_counter == temp_counter + 1 and (token.pos_ == "NOUN" or token.pos_ == "PROPN"):
-            verb_subject = token.lemma_
-            if verb_subject not in verb_list:
-                verb_list[verb_subject] = 1
-            elif verb_subject in verb_list:
-                verb_list[verb_subject] += 1
-            temp_counter = -2
-        elif token_counter == temp_counter + 1:
-            token_counter += 1
-            temp_counter += 1
-        elif token.lemma_ == verb:
-            temp_counter = token_counter
-        token_counter += 1
-    return verb_list
-
 def subjects_by_verb2(doc, verb):
     # at this point I went back to the spacy documentation and read it more carefully!
-    # interpreting 'syntactic subject of to hear' as agent that does the hearing
+    # interpreting 'syntactic subject of to hear' as the spacy-defined nsubj of the verb from the dependency parsing
+    # Note - I'm not completely satisfied with this - too many pronouns rather than named entities, would have liked to extract the named entities referred to by the pronouns
+    # didn't find an easy way of getting named entities from pronouns - found a long discussion here: https://explosion.ai/blog/coref
+    # ultimately, I ran out of time to find the named entities from the pronouns, and the link above references an experimental library, which I thought was beyond the scope of the assignment (mentions just using spacy)
     subjects = dict()    
     for token in doc:
         if token.pos_ == "VERB":
@@ -207,69 +189,6 @@ def subjects_by_verb2(doc, verb):
                         elif t.lemma_ in subjects:
                             subjects[t.lemma_] += 1
     return subjects
-
-
-
-
-def object_verb_dependent(doc, verb):
-
-    #
-    #object_verb_list = dict()
-    #for token in doc:
-        #if token.lemma_ == verb:
-            #root = [token for token in doc if token.head == token][0]
-            #subject = list(root.lefts)[0]
-            #for descendant in subject.subtree:
-                #assert subject is descendant or subject.is_ancestor(descendant)
-                #print(descendant.text, descendant.dep_, descendant.n_lefts, descendant.n_rights, [ancestor.text for ancestor in descendant.ancestors])
-    """
-    for chunk in doc.noun_chunks:
-        print(chunk.text, chunk.root.text, chunk.root.dep_,
-                chunk.root.head.text)
-    """
-    # first proper draft after reading the documents
-    # I'll come back to this and work out how to get the people that the pronouns refer to
-    subjects = dict()    
-    for token in doc:
-        if token.pos_ == "VERB":
-            if token.lemma_ == verb:
-                v = []
-                #print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_, token.shape_, token.is_alpha, token.is_stop)
-                for t in token.lefts:
-                    #print("lefts: ", t.lemma_, t.pos_, t.tag, t.dep_, t.shape_, t.is_alpha, t.is_stop)
-                    if t.pos_ == "NOUN" or t.pos_ == "PNOUN" or t.pos_ == "PRON":
-                        v.append(t)
-                        if t.lemma_ not in subjects:
-                            subjects[t.lemma_] = 1
-                        elif t.lemma_ in subjects:
-                            subjects[t.lemma_] += 1
-                #for t in token.rights:
-                    #print("Rights: ", t.lemma_, t.pos_, t.tag, t.dep_, t.shape_, t.is_alpha, t.is_stop)
-                #print(v)
-    #print(subjects)
-    return subjects
-
-"""
-    for token in doc:
-        verb_nlp = nlp(verb)
-        for i in verb_nlp:
-            if token.lemma_ == i.lemma_:
-                verb_subtree = token.ancestors
-                #print(verb_subtree)
-                a = []
-                for ancestor in verb_subtree:
-                    #a = []
-                    #print(ancestor)
-                    #if ancestor.pos_ == "NOUN" or ancestor.pos_ == "PNOUN":
-                    a.append(ancestor)
-                    #print(ancestor)
-                    if ancestor.lemma_ not in object_verb_list:
-                        object_verb_list[ancestor.lemma_] = 1
-                    elif ancestor.lemma_ in object_verb_list:
-                        object_verb_list[ancestor.lemma_] += 1
-                print(a)
-    return object_verb_list
-"""
 
 def subjects_by_verb_pmi(doc, target_verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
@@ -323,71 +242,11 @@ def subjects_by_verb_pmi(doc, target_verb):
     results_top_10 = sorted(dict_to_return.items(), key=lambda item: item[1], reverse = True)[:9]
     return results_top_10
 
-
-
 def subjects_by_verb_count(doc, verb):
     """Extracts the most common subjects of a given verb in a parsed document. Returns a list."""
     verb_dict = subjects_by_verb2(doc, verb)
     results_top_10 = sorted(verb_dict.items(), key=lambda item: item[1], reverse = True)[:9]
     return results_top_10
-
-
-def find_noun_chunks(doc):
-    # I saw the idea of noun chunks somewhere in the documentation, thought it might be better than just getting nouns
-    all_objects = dict()
-    for i in doc.noun_chunks:
-        if i not in all_objects:
-            all_objects[i] = 1
-        elif i in all_objects:
-            all_objects[i] += 1
-    #print(all_adjectives)
-    return all_objects
-
-def noun_chunk_counts(doc):
-    results = {}
-    for i, row in df.iterrows():
-        row_results = find_noun_chunks(row["parsed_text"])
-        results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
-        results[row["title"]] = results_top_10
-    return results
-
-def find_adjectives(doc):
-    # copied this from something I did in a class exercise
-    all_adjectives = dict()
-    for token in doc:
-        token_text = token.lemma_
-        if token.pos_ == "ADJ":
-            if token_text not in all_adjectives:
-                all_adjectives[token_text] = 1
-            elif token_text in all_adjectives:
-                all_adjectives[token_text] += 1
-    #print(all_adjectives)
-    return all_adjectives
-
-def adjective_counts(doc):
-    """Extracts the most common adjectives in a parsed document. Returns a list of tuples."""
-    # it didn't specifically ask about this in the instructions, but the sample function was here
-    # I thought I'd just create it anyway, really isn't any extra work, given that I had to do the same thing for syntactic objects
-    results = {}
-    for i, row in df.iterrows():
-        row_results = find_adjectives(row["parsed_text"])
-        results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
-        results[row["title"]] = results_top_10
-    return results
-
-def find_nouns(doc):
-    # copied this from something I did in a class exercise
-    # I've assumed that 'syntactic objects' means actual objects, i.e. words denoted by a noun
-    # I suppose it could also have meant any token
-    all_nouns = dict()
-    for token in doc:
-        token_text = token.lemma_
-        if token.pos_ == "NOUN" or token.pos == "PROPN":
-            if token_text not in all_nouns:
-                all_nouns[token_text] = 1
-            elif token_text in all_nouns:
-                all_nouns[token_text] += 1
-    return all_nouns
 
 def find_dobj(doc):
     # re-reading spacy parser, identifying syntactic objects by 'dobj'
@@ -401,16 +260,12 @@ def find_dobj(doc):
                 all_dobj[token_text] += 1
     return all_dobj
 
-
 def object_counts(doc):
     """Extracts the most common nouns in a parsed document. Returns a list of tuples."""
     # defining syntactic objects as nouns and proper nouns
-    results = {}
-    for i, row in df.iterrows():
-        row_results = find_dobj(row["parsed_text"])
-        results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
-        results[row["title"]] = results_top_10
-    return results
+    row_results = find_dobj(doc)
+    results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
+    return results_top_10
 
 if __name__ == "__main__":
     """
@@ -436,8 +291,12 @@ if __name__ == "__main__":
     print(df.dtypes)
     #print(adjective_counts(df))
     #print(noun_counts(df))
+    
     print("1(f)(i)")
-    print(object_counts(df))
+    for i, row in df.iterrows():
+        print(row["title"])
+        print(object_counts(row["parsed_text"]))
+        print("\n")
 
     print("1(f)(ii)")
     for i, row in df.iterrows():
