@@ -104,9 +104,7 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
     novelsdf_without_text = novelsdf_without_text.sort_values(by = ['year'], ascending = True)
     pd.set_option("display.max_columns", None)
     n_df = novelsdf_without_text.merge(novels_df[["title","text"]], how = 'left', on = ['title'])
-    #print(n_df)
     return n_df
-
 
 def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     """Parses the text of a DataFrame using spaCy, stores the parsed docs as a column and writes 
@@ -126,11 +124,7 @@ def parse_text_with_spacy(text):
     nlp = spacy.load("en_core_web_sm")
     nlp.max_length = 1200000
     tok_text = nlp(text)
-
-    # Construction via add_pipe with default model
-    #parser = nlp.add_pipe("parser")
     return tok_text
-    #return parser
 
 
 def nltk_ttr(text):
@@ -250,11 +244,12 @@ def subjects_by_verb_count(doc, verb):
 
 def find_dobj(doc):
     # re-reading spacy parser, identifying syntactic objects by 'dobj'
+    # experimented with excluding pronouns, as they're the most common - without a good way of getting named entities from pronouns, this didn't work well, as it simply excluded many syntactic objects
     all_dobj = dict()
     for token in doc:
         token_text = token.lemma_
         if token.dep_ == "dobj":
-            if token_text not in all_dobj:
+            if token_text not in all_dobj: # and token.pos_ != "PRON":
                 all_dobj[token_text] = 1
             elif token_text in all_dobj:
                 all_dobj[token_text] += 1
@@ -262,7 +257,6 @@ def find_dobj(doc):
 
 def object_counts(doc):
     """Extracts the most common nouns in a parsed document. Returns a list of tuples."""
-    # defining syntactic objects as nouns and proper nouns
     row_results = find_dobj(doc)
     results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
     return results_top_10
@@ -289,9 +283,7 @@ if __name__ == "__main__":
     print("1(e)")
     print(df.head())
     print(df.dtypes)
-    #print(adjective_counts(df))
-    #print(noun_counts(df))
-    
+
     print("1(f)(i)")
     for i, row in df.iterrows():
         print(row["title"])
