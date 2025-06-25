@@ -312,7 +312,7 @@ def subjects_by_verb_count(doc, verb):
     return results_top_10
 
 
-def find_objects(doc):
+def find_noun_chunks(doc):
     # I saw the idea of noun chunks somewhere in the documentation, thought it might be better than just getting nouns
     all_objects = dict()
     for i in doc.noun_chunks:
@@ -323,10 +323,10 @@ def find_objects(doc):
     #print(all_adjectives)
     return all_objects
 
-def object_counts(doc):
+def noun_chunk_counts(doc):
     results = {}
     for i, row in df.iterrows():
-        row_results = find_objects(row["parsed_text"])
+        row_results = find_noun_chunks(row["parsed_text"])
         results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
         results[row["title"]] = results_top_10
     return results
@@ -369,7 +369,7 @@ def find_nouns(doc):
                 all_nouns[token_text] += 1
     return all_nouns
 
-def noun_counts(doc):
+def object_counts(doc):
     """Extracts the most common nouns in a parsed document. Returns a list of tuples."""
     # defining syntactic objects as nouns and proper nouns
     results = {}
@@ -383,7 +383,7 @@ if __name__ == "__main__":
     """
     uncomment the following lines to run the functions once you have completed them
     """
-    
+    """
     path = Path.cwd() / "p1-texts" / "novels"
     print(path)
     df = read_novels(path) # this line will fail until you have completed the read_novels function above.
@@ -396,7 +396,7 @@ if __name__ == "__main__":
     print(get_ttrs(df))
     print("1(c)")
     print(get_fks(df))
-    
+    """
     df = pd.read_pickle(Path.cwd() / "pickles" /"parsed.pickle")
     print("1(e)")
     print(df.head())
