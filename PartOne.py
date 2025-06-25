@@ -70,8 +70,16 @@ def count_syl(word, d):
         syllables_in_word = len(syllable)
         return syllables_in_word
     except:
-        #print(w + " not in the dictionary.")
-        return 0
+        #counting vowel clusters, i.e. sequences of letters where each letter is a vowel
+        prev_letter = "z"
+        cluster_count = 0
+        for letter in w:
+            if prev_letter not in ("a","e","i","o","u"):
+                if letter in ("a","e","i","o","u"):
+                    cluster_count += 1
+            prev_letter = letter
+        return cluster_count
+
 
     # should also take the word out of the total words count?
     # need to split these into morphemes instead of full words
@@ -265,7 +273,7 @@ if __name__ == "__main__":
     """
     uncomment the following lines to run the functions once you have completed them
     """
-    """
+    
     path = Path.cwd() / "p1-texts" / "novels"
     print(path)
     df = read_novels(path) # this line will fail until you have completed the read_novels function above.
@@ -278,7 +286,7 @@ if __name__ == "__main__":
     print(get_ttrs(df))
     print("1(c)")
     print(get_fks(df))
-    """
+    
     df = pd.read_pickle(Path.cwd() / "pickles" /"parsed.pickle")
     print("1(e)")
     print(df.head())
