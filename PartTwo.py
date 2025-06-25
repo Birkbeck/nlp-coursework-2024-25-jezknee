@@ -12,7 +12,7 @@ import numpy as np
 
 pd.set_option("display.max_columns", None)
 text = pd.read_csv(Path.cwd() / "p2-texts" / "hansard40000.csv")
-#text = pd.read_csv(r"C:\Users\jezkn\OneDrive\Documents\Birkbeck\Work\Natural Language Processing\Coursework\nlp-coursework-2024-25-jezknee\p2-texts\hansard40000.csv", encoding='utf-8', encoding_errors='replace')
+
 hansard_df = pd.DataFrame(text)
 hansard_df = hansard_df.replace("Labour (Co-op)", "Labour")
 filtered_hansard_df = hansard_df[hansard_df["party"] != "Speaker"]
