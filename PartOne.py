@@ -192,12 +192,14 @@ def subjects_by_verb(doc, verb):
     return verb_list
 
 def subjects_by_verb2(doc, verb):
+    # at this point I went back to the spacy documentation and read it more carefully!
+    # interpreting 'syntactic subject of to hear' as agent that does the hearing
     subjects = dict()    
     for token in doc:
         if token.pos_ == "VERB":
             if token.lemma_ == verb:
                 v = []
-                for t in token.lefts:
+                for t in token.children:
                     if t.dep_ == "nsubj":
                         v.append(t)
                         if t.lemma_ not in subjects:
@@ -210,8 +212,7 @@ def subjects_by_verb2(doc, verb):
 
 
 def object_verb_dependent(doc, verb):
-    # at this point I went back to the spacy documentation and read it more carefully!
-    # interpreting 'syntactic subject of to hear' as agent that does the hearing
+
     #
     #object_verb_list = dict()
     #for token in doc:
