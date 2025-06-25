@@ -369,12 +369,25 @@ def find_nouns(doc):
                 all_nouns[token_text] += 1
     return all_nouns
 
+def find_dobj(doc):
+    # re-reading spacy parser, identifying syntactic objects by 'dobj'
+    all_dobj = dict()
+    for token in doc:
+        token_text = token.lemma_
+        if token.dep_ == "dobj":
+            if token_text not in all_dobj:
+                all_dobj[token_text] = 1
+            elif token_text in all_dobj:
+                all_dobj[token_text] += 1
+    return all_dobj
+
+
 def object_counts(doc):
     """Extracts the most common nouns in a parsed document. Returns a list of tuples."""
     # defining syntactic objects as nouns and proper nouns
     results = {}
     for i, row in df.iterrows():
-        row_results = find_nouns(row["parsed_text"])
+        row_results = find_dobj(row["parsed_text"])
         results_top_10 = sorted(row_results.items(), key=lambda item: item[1], reverse = True)[:9]
         results[row["title"]] = results_top_10
     return results
