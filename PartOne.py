@@ -10,8 +10,6 @@ import pandas as pd
 nlp = spacy.load("en_core_web_sm")
 nlp.max_length = 2000000
 
-
-
 def fk_level(text, d):
     """Returns the Flesch-Kincaid Grade Level of a text (higher grade is more difficult).
     Requires a dictionary of syllables per word.
@@ -96,6 +94,7 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
                 novel.append(novel_text)
                 texts.append(novel)
     novels_df = pd.DataFrame(texts)
+    #1(a)(i)
     novels_df.columns = ["title", "author", "year", "text"]
     #1(a)(ii)
     # I spent hours trying to sort my dataframe with the text included. 
@@ -108,7 +107,6 @@ def read_novels(path=Path.cwd() / "texts" / "novels"):
     n_df = novelsdf_without_text.merge(novels_df[["title","text"]], how = 'left', on = ['title'])
     #print(n_df)
     return n_df
-    pass
 
 
 def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
@@ -123,8 +121,6 @@ def parse(df, store_path=Path.cwd() / "pickles", out_name="parsed.pickle"):
     store_path=Path.cwd() / "pickles" / "parsed.pickle"
     df.to_pickle(store_path)
     return df
-
-    pass
 
 def parse_text_with_spacy(text):
     from spacy.tokenizer import Tokenizer
@@ -146,7 +142,7 @@ def nltk_ttr(text):
 
     # I used nltk's regex tokenizer, as detailed here: https://www.geeksforgeeks.org/python-nltk-tokenize-regexp/
     from nltk.tokenize import RegexpTokenizer
-    tk = RegexpTokenizer(r'\w+')
+    tk = RegexpTokenizer(r'\w+') # this just gets the letters or digits, so no punctuation
     tok_text_no_punc = tk.tokenize(text)
     toks = []
     for i in tok_text_no_punc:
@@ -160,30 +156,12 @@ def nltk_ttr(text):
     type_token_ratio = round(len(types) / len(toks), 3)
     return type_token_ratio
 
-    pass
-
-#path1 = Path.cwd()
-#test_df = read_novels(path1)
-#test_text = test_df["text"][0]z
-#parse_text_with_spacy(test_text)
-#test_text = "Here are some words. I am writing a sentence or two or three. However, the longer words make this harder to read."
-#nltk_ttr(test_text)
-#cmudict = nltk.corpus.cmudict.dict()
-#from nltk.tokenize import RegexpTokenizer
-#tk = RegexpTokenizer(r'\w+')
-#tok_text = nltk.word_tokenize(text)
-    
-#test_t_nopunc = tk.tokenize(test_text)
-
-
-
 def get_ttrs(df):
     """helper function to add ttr to a dataframe"""
     results = {}
     for i, row in df.iterrows():
         results[row["title"]] = nltk_ttr(row["text"])
     return results
-
 
 def get_fks(df):
     """helper function to add fk scores to a dataframe"""
@@ -325,7 +303,6 @@ def subjects_by_verb_pmi(doc, target_verb):
     results_top_10 = sorted(dict_to_return.items(), key=lambda item: item[1], reverse = True)[:9]
     return results_top_10
 
-    pass
 
 
 def subjects_by_verb_count(doc, verb):
@@ -333,8 +310,6 @@ def subjects_by_verb_count(doc, verb):
     verb_dict = object_verb_dependent(doc, verb)
     results_top_10 = sorted(verb_dict.items(), key=lambda item: item[1], reverse = True)[:9]
     return results_top_10
-
-    pass
 
 
 def find_objects(doc):
@@ -380,8 +355,6 @@ def adjective_counts(doc):
         results[row["title"]] = results_top_10
     return results
 
-    pass
-
 def find_nouns(doc):
     # copied this from something I did in a class exercise
     # I've assumed that 'syntactic objects' means actual objects, i.e. words denoted by a noun
@@ -410,28 +383,36 @@ if __name__ == "__main__":
     """
     uncomment the following lines to run the functions once you have completed them
     """
-    #path = Path.cwd() / "p1-texts" / "novels"
-    #print(path)
-    #df = read_novels(path) # this line will fail until you have completed the read_novels function above.
-    #print(df.head())
-    #print(df.dtypes)
-    #nltk.download("cmudict")
-    #parse(df)
-    #print(df.head())
-    #print(get_ttrs(df))
-    #print(get_fks(df))
-    df = pd.read_pickle(Path.cwd() / "pickles" /"parsed.pickle")
+    
+    path = Path.cwd() / "p1-texts" / "novels"
+    print(path)
+    df = read_novels(path) # this line will fail until you have completed the read_novels function above.
     print(df.head())
     print(df.dtypes)
-    print(adjective_counts(df))
-    print(noun_counts(df))
-    #print(object_counts(df))
+    nltk.download("cmudict")
+    parse(df)
+    #print(df.head())
+    print("1(b)")
+    print(get_ttrs(df))
+    print("1(c)")
+    print(get_fks(df))
+    
+    df = pd.read_pickle(Path.cwd() / "pickles" /"parsed.pickle")
+    print("1(e)")
+    print(df.head())
+    print(df.dtypes)
+    #print(adjective_counts(df))
+    #print(noun_counts(df))
+    print("1(f)(i)")
+    print(object_counts(df))
 
+    print("1(f)(ii)")
     for i, row in df.iterrows():
         print(row["title"])
         print(subjects_by_verb_count(row["parsed_text"], "hear"))
         print("\n")
 
+    print("1(f)(iii)")
     for i, row in df.iterrows():
         print(row["title"])
         print(subjects_by_verb_pmi(row["parsed_text"], "hear"))
