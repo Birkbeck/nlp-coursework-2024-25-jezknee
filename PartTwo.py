@@ -136,19 +136,7 @@ print("doing features selection...")
 # I've read through the official scikitlearn documentation again and got these ideas from there
 sel = SelectKBest(score_func=chi2,k=1500)
 X_train5 = sel.fit_transform(b, y_train5)
-"""
-try:
-    #speech_index = 0
-    for speech in X_train5:
-        feature_names = v_obj.get_feature_names_out()
-        word_count = np.asarray(speech.sum(axis=0)).ravel()
-        word_freq = list(zip(feature_names, word_count))
-        print("Top Words: ")
-        top_words = sorted(word_freq, key = lambda x: x[1], reverse = True)[:20]
-        print(top_words)
-except:
-    print("could not print count of features")
-"""
+
 print("fitting test data...")
 X_test5a = v_obj.transform(x_test5)
 X_test5b = a.transform(X_test5a)
